@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('partials/head', { title: title, cssFile: 'productos.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  
+  <%- include('partials/header', { activePage: 'productos' }) %>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1>PRODUCTOS XTREE</h1>
+      <p class="hero-subtitle">
+        Dos versiones, una misma energía. Elige tu estilo, vive al 100%
+      </p>
+    </div>
+  </section>
+
+  <section class="products">
+    <h2>Nuestra Línea</h2>
+    <div class="products-grid">
+      
+      <!-- XTREE Cosmos -->
+      <div class="product-card cosmos cosmos-glow">
+        <div class="product-image">
+          <img src="/img/lata-2.png" alt="XTREE Cosmos" />
+        </div>
+        <div class="product-info">
+          <h3>XTREE COSMOS</h3>
+          <div class="product-flavor">Edición Especial</div>
+          <p class="product-description">
+            Para los que buscan trascender. Esta edición especial combina la potencia natural 
+            de XTREE con un diseño que refleja la infinidad del cosmos. Energía que te conecta 
+            con tu potencial ilimitado.
+          </p>
+          <div class="product-features">
+            <span class="feature-badge">Sabor Frutal</span>
+            <span class="feature-badge">Edición Limitada</span>
+            <span class="feature-badge">Natural</span>
+          </div>
+          <a href="#" class="btn-product">Descubrir Cosmos</a>
+        </div>
+      </div>
+
+      <!-- XTREE Thunder -->
+      <div class="product-card thunder thunder-glow">
+        <div class="product-image">
+          <img src="/img/lata.png" alt="XTREE Thunder" />
+        </div>
+        <div class="product-info">
+          <h3>XTREE THUNDER</h3>
+          <div class="product-flavor">Fuerza Natural</div>
+          <p class="product-description">
+            La versión clásica que lo empezó todo. Energía pura como un rayo, diseño que 
+            simboliza la fuerza de la naturaleza. Para los momentos donde necesitas esa 
+            descarga extra de potencia.
+          </p>
+          <div class="product-features">
+            <span class="feature-badge">Fórmula Original</span>
+            <span class="feature-badge">Guaraná</span>
+            <span class="feature-badge">Sin Azúcar</span>
+          </div>
+          <a href="#" class="btn-product">Probar Thunder</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="specs">
+    <h2>Especificaciones</h2>
+    <div class="specs-grid">
+      <div class="spec-card">
+        <h4>Información Nutricional</h4>
+        <ul class="spec-list">
+          <li>Contenido: 355ml</li>
+        </ul>
+      </div>
+      
+      <div class="spec-card">
+        <h4>Ingredientes Principales</h4>
+        <ul class="spec-list">
+          <li>Extracto de Guaraná</li>
+          <li>Té Verde orgánico</li>
+          <li>Ginseng premium</li>
+          <li>Extractos de frutas naturales</li>
+          <li>Agua purificada</li>
+        </ul>
+      </div>
+      
+      <div class="spec-card">
+        <h4>Características</h4>
+        <ul class="spec-list">
+          <li>100% ingredientes naturales</li>
+          <li>Sin colorantes artificiales</li>
+          <li>Envase reciclable</li>
+          <li>Producción sustentable</li>
+          <li>Vegano y libre de gluten</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script src="/js/global.js"></script>
+</body>
+</html>

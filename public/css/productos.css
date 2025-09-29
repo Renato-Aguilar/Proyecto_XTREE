@@ -1,0 +1,350 @@
+/* ===========================
+   HERO SECTION
+=========================== */
+.hero {
+  padding: 120px 50px 60px;
+  text-align: center;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-content {
+  max-width: 800px;
+}
+
+.hero h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 900;
+  color: #00ff00;
+  margin-bottom: 20px;
+  text-shadow: 0 0 30px #00ff00;
+  animation: titlePulse 3s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  color: #cccccc;
+  line-height: 1.6;
+  animation: fadeInUp 1s ease-out 0.5s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   PRODUCTS SECTION
+=========================== */
+.products {
+  padding: 80px 50px;
+  background: linear-gradient(180deg, #000 0%, #0a0a0a 100%);
+}
+
+.products h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.8rem;
+  color: #00ff00;
+  text-align: center;
+  margin-bottom: 60px;
+  text-shadow: 0 0 20px #00ff00;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ---------- Product Card ---------- */
+.product-card {
+  background: linear-gradient(145deg, #111, #0a0a0a);
+  padding: 40px;
+  border-radius: 25px;
+  border: 1px solid #00ff00;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.product-card:hover {
+  transform: translateY(-15px) scale(1.02);
+  box-shadow: 0 25px 50px rgba(0, 255, 0, 0.3);
+  border-color: #66ff66;
+}
+
+/* Top line animation */
+.product-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00ff00, transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.product-card:hover::before {
+  transform: translateX(100%);
+}
+
+/* ---------- Product Image ---------- */
+.product-image {
+  width: 200px;
+  height: 350px;
+  margin: 0 auto 30px;
+  position: relative;
+  animation: float 6s ease-in-out infinite;
+}
+
+.product-card:nth-child(2) .product-image {
+  animation-delay: -3s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(1deg); }
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.5));
+  transition: all 0.3s ease;
+}
+
+.product-card:hover .product-image img {
+  filter: drop-shadow(0 0 30px rgba(0, 255, 0, 0.8)) drop-shadow(0 0 60px rgba(0, 255, 0, 0.4));
+  transform: scale(1.05);
+}
+
+/* ---------- Product Info ---------- */
+.product-info h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.8rem;
+  color: #00ff00;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px #00ff00;
+}
+
+.product-flavor {
+  font-size: 1.1rem;
+  color: #ff08ff;
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.product-card.thunder .product-flavor {
+  color: #00ff00;
+}
+
+.product-description {
+  color: #cccccc;
+  line-height: 1.6;
+  margin-bottom: 25px;
+  font-size: 1rem;
+}
+
+/* ---------- Features ---------- */
+.product-features {
+  display: flex;
+  justify-content: space-around;
+  margin: 25px 0;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.feature-badge {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid rgba(0, 255, 0, 0.3);
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: #00ff00;
+  transition: all 0.3s ease;
+}
+
+.feature-badge:hover {
+  background: rgba(0, 255, 0, 0.2);
+  transform: scale(1.05);
+}
+
+.product-card.cosmos .feature-badge {
+  background: rgba(255, 0, 255, 0.411);
+  border: 1px solid rgba(255, 0, 255, 0.658);
+  color: #ff00ff;
+}
+
+.product-card.cosmos .feature-badge:hover {
+  background: rgba(255, 0, 255, 0.452);
+}
+
+/* ---------- Button ---------- */
+.btn-product {
+  background: transparent;
+  border: 2px solid #00ff00;
+  color: #00ff00;
+  padding: 15px 35px;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.btn-product::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-product:hover::before {
+  left: 100%;
+}
+
+.btn-product:hover {
+  background-color: #00ff00;
+  color: #000;
+  box-shadow: 0 0 20px #00ff00;
+  transform: translateY(-2px);
+}
+
+.product-card.cosmos .btn-product {
+  border-color: #ff00ff;
+  color: #ff00ff;
+}
+
+.product-card.cosmos .btn-product::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.2), transparent);
+}
+
+.product-card.cosmos .btn-product:hover {
+  background-color: #ff00ff;
+  color: #000;
+  box-shadow: 0 0 20px #ff00ff;
+}
+
+/* ===========================
+   SPECIFICATIONS SECTION
+=========================== */
+.specs {
+  padding: 80px 50px;
+  background: linear-gradient(180deg, #0a0a0a 0%, #000 100%);
+}
+
+.specs h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.8rem;
+  color: #00ff00;
+  text-align: center;
+  margin-bottom: 60px;
+  text-shadow: 0 0 20px #00ff00;
+}
+
+.specs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.spec-card {
+  background: rgba(0, 255, 0, 0.05);
+  padding: 30px;
+  border-radius: 15px;
+  border: 1px solid rgba(0, 255, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.spec-card:hover {
+  background: rgba(0, 255, 0, 0.1);
+  transform: scale(1.03);
+}
+
+.spec-card h4 {
+  color: #00ff00;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.spec-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.spec-list li {
+  color: #cccccc;
+  margin-bottom: 8px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.spec-list li::before {
+  content: '⚡';
+  position: absolute;
+  left: 0;
+  color: #00ff00;
+}
+
+/* ===========================
+   CUSTOM ANIMATIONS
+=========================== */
+.cosmos-glow {
+  animation: cosmosGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes cosmosGlow {
+  from {
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.726);
+  }
+  to {
+    box-shadow: 0 0 40px rgba(255, 0, 255, 0.6), 0 0 80px rgba(255, 0, 255, 0.3);
+  }
+}
+
+.thunder-glow {
+  animation: thunderGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes thunderGlow {
+  from {
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+  }
+  to {
+    box-shadow: 0 0 40px rgba(0, 255, 0, 0.6), 0 0 80px rgba(0, 255, 0, 0.3);
+  }
+}

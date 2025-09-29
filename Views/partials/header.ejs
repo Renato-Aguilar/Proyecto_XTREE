@@ -1,0 +1,22 @@
+<header>
+  <a href="/" class="logo">XTREE</a>
+  <nav>
+    
+    <a href="/" class="<%= activePage === 'inicio' ? 'active' : '' %>">Inicio</a>
+    <a href="/nosotros" class="<%= activePage === 'nosotros' ? 'active' : '' %>">Nosotros</a>
+    <a href="/productos" class="<%= activePage === 'productos' ? 'active' : '' %>">Productos</a>
+    <a href="/comprar">Comprar</a>
+    <a href="#contacto">Contacto</a>
+    <a href="/carrito" class="cart-link <%= activePage === 'carrito' ? 'active' : '' %>">
+      <i class="fa-solid fa-shopping-cart cart-icon"></i>
+      <span class="cart-count">0</span>
+    </a>
+    <!-- Botón de Login -->
+    <div class="auth-buttons">
+      <a href="/login" class="login-btn <%= activePage === 'login' ? 'active' : '' %>">
+        <i class="fa-solid fa-user"></i>
+        <span>Iniciar Sesión</span>
+      </a>
+    </div>
+  </nav>
+</header>

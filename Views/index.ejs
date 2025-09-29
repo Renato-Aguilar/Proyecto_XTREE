@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('partials/head', { title: title, cssFile: 'index.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  
+  <%- include('partials/header', { activePage: 'inicio' }) %>
+
+  <section class="hero" id="inicio">
+    <div class="hero-content">
+      <h1>XTREE ENERGY</h1>
+      <p class="hero-subtitle">Energía natural, sin límites.</p>
+      <p class="hero-description">
+        Para los que no frenan. Los que se levantan temprano o se acuestan tarde. 
+        Los que entrenan fuerte, estudian a full o simplemente viven al 100%. 
+        Si estás en modo "voy con todo", XTREE es para ti.
+      </p>
+      <div class="buttons">
+        <a href="#ingredientes" class="btn">Descubre Más</a>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="/img/lata.png" alt="Lata XTREE Energy" />
+    </div>
+  </section>
+
+  <section class="features">
+    <h2>¿Por qué XTREE?</h2>
+    <div class="feature-grid">
+      <div class="feature">
+        <span class="feature-icon"><i class="fa-solid fa-sun" style="color: white;"></i></span>
+        <h3>Energía Limpia</h3>
+        <p>La mezcla justa de energía, enfoque y aguante para acompañarte en cualquier situación, sin el bajón posterior.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon"><i class="fa-solid fa-leaf" style="color: white;"></i></span>
+        <h3>Ingredientes Reales</h3>
+        <p>Guaraná, té verde y ginseng. Nada de químicos raros ni fórmulas mágicas. Solo energía natural y sostenida.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon"><i class="fa-solid fa-person-running" style="color: white;"></i></span>
+        <h3>Rendimiento Total</h3>
+        <p>Para entrenamientos intensos, jornadas eternas de trabajo o estudio. Cuando necesitás estar al 100%.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon"><i class="fa-solid fa-recycle" style="color: white;"></i></span>
+        <h3>Consciente</h3>
+        <p>Envase reciclable y producción responsable. Energía que cuida tu cuerpo y el planeta.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon"><i class="fa-solid fa-fire-flame-curved" style="color: white;"></i></span>
+        <h3>Sabor Único</h3>
+        <p>Refrescante y natural, pensado para que disfrutes cada sorbo sin exceso de azúcar.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon"><i class="fa-solid fa-star" style="color: white;"></i></span>
+        <h3>Identidad</h3>
+        <p>No es solo una bebida, es un estilo de vida. Acompaña a quienes buscan superarse sin perder el equilibrio.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ingredients" id="ingredientes">
+    <h2>Ingredientes Naturales</h2>
+    <div class="ingredients-grid">
+      <div class="ingredient">
+        <h4>Frutas</h4>
+        <p>Fuente de sabor refrescante y nutrientes esenciales. un toque dulce natural, sin necesidad de azúcares añadidos.</p>
+      </div>
+      <div class="ingredient">
+        <h4>Agua Purificada</h4>
+        <p>Agua cuidadosamente filtrada que asegura pureza y frescura.</p>
+      </div>
+      <div class="ingredient">
+        <h4>Guaraná</h4>
+        <p>Una planta usada hace siglos para dar energía sostenida y natural. El secreto de XTREE.</p>
+      </div>
+      <div class="ingredient">
+        <h4>Té Verde</h4>
+        <p>Rico en antioxidantes y cafeína natural, proporciona energía constante sin nerviosismo.</p>
+      </div>
+      <div class="ingredient">
+        <h4>Extractos Botánicos</h4>
+        <p>Selección premium de plantas que potencian el rendimiento de forma natural.</p>
+      </div>
+      <div class="ingredient">
+        <h4>Ginseng</h4>
+        <p>Adaptógeno natural que mejora el enfoque mental y reduce la fatiga.</p>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <!-- Scripts -->
+  <script src="/js/global.js"></script>
+  <script src="/js/index.js"></script>
+</body>
+</html>
