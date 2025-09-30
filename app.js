@@ -20,7 +20,7 @@ app.set('view engine', 'ejs');
 
 // Indicamos dónde estarán las vistas (.ejs). 
 // Al no usar "path", se busca directamente la carpeta "Views" en la raíz del proyecto.
-app.set('views', __dirname + '/Views');
+app.set('views', __dirname + '/views');
 
 // ----------------------
 // Archivos estáticos
@@ -35,7 +35,7 @@ app.use(express.static('public'));
 // ----------------------
 
 // Importamos las rutas definidas en "Routes/pageRoutes.js"
-const pageRoutes = require('./Routes/pageRoutes');
+const pageRoutes = require('./routes/pageRoutes');
 
 // Montamos esas rutas en la raíz "/".
 // Ejemplo: "/" → index.ejs | "/nosotros" → nosotros.ejs | "/productos" → productos.ejs

@@ -5,7 +5,7 @@ const express = require('express');
 const router = express.Router();
 
 // Importamos los controladores que renderizan las vistas
-const { getIndex, getNosotros, getProductos } = require('../Controllers/pageControllers');
+const { getIndex, getNosotros, getProductos } = require('../controllers/pageControllers');
 
 // Definimos las rutas y qué función se ejecuta en cada una
 // Cuando un usuario entre a "/" se ejecuta getIndex
