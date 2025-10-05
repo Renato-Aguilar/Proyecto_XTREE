@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('partials/head', { cssFile: 'pedidos.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('partials/header') %>
+
+  <main class="orders-container">
+    <div class="orders-header">
+      <h1>
+        <i class="fa-solid fa-box"></i>
+        Mis Pedidos
+      </h1>
+      <p>Revisa el historial de tus compras</p>
+    </div>
+
+    <!-- Mensajes Flash -->
+    <% if (locals.error && error.length > 0) { %>
+      <div class="alert alert-error">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <%= error[0] %>
+      </div>
+    <% } %>
+
+    <% if (locals.success && success.length > 0) { %>
+      <div class="alert alert-success">
+        <i class="fa-solid fa-circle-check"></i>
+        <%= success[0] %>
+      </div>
+    <% } %>
+
+    <% if (orders && orders.length > 0) { %>
+      <div class="orders-list">
+        <% orders.forEach(order => { %>
+          <div class="order-card">
+            <div class="order-header-card">
+              <div class="order-id">
+                <h3>Pedido #<%= order.id_orden %></h3>
+                <p class="order-date">
+                  <i class="fa-solid fa-calendar"></i>
+                  <%= new Date(order.fecha_creacion).toLocaleDateString('es-CL', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  }) %>
+                </p>
+              </div>
+              <div class="order-status">
+                <span class="status-badge <%= order.estado_actual ? order.estado_actual.toLowerCase().replace(/\s/g, '-') : 'procesando' %>">
+                  <%= order.estado_actual || 'PROCESANDO' %>
+                </span>
+              </div>
+            </div>
+
+            <div class="order-body">
+              <div class="order-info">
+                <div class="info-item">
+                  <i class="fa-solid fa-dollar-sign"></i>
+                  <div>
+                    <span class="info-label">Total</span>
+                    <span class="info-value">$<%= order.monto_total.toLocaleString('es-CL') %></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="order-actions">
+                <a href="/pedidos/<%= order.id_orden %>" class="btn-detail">
+                  <i class="fa-solid fa-eye"></i>
+                  Ver Detalle
+                </a>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-orders">
+        <div class="empty-icon">
+          <i class="fa-solid fa-box-open"></i>
+        </div>
+        <h2>No tienes pedidos aún</h2>
+        <p>¡Realiza tu primera compra y empieza a disfrutar de XTREE Energy!</p>
+        <a href="/comprar" class="btn-shop">
+          <i class="fa-solid fa-bolt"></i>
+          Explorar Productos
+        </a>
+      </div>
+    <% } %>
+  </main>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

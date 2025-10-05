@@ -1,0 +1,297 @@
+/* Estilos para página de pedidos */
+
+.orders-container {
+  min-height: 100vh;
+  padding: 120px 50px 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.orders-header {
+  text-align: center;
+  margin-bottom: 50px;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+.orders-header h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 3rem;
+  color: #00ff00;
+  margin-bottom: 10px;
+  text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.orders-header p {
+  color: #cccccc;
+  font-size: 1.1rem;
+}
+
+/* Lista de pedidos */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.order-card {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 255, 0, 0.3);
+  border-radius: 15px;
+  padding: 25px;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.order-card:hover {
+  border-color: rgba(0, 255, 0, 0.5);
+  box-shadow: 0 5px 20px rgba(0, 255, 0, 0.2);
+  transform: translateY(-3px);
+}
+
+.order-header-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.order-id h3 {
+  font-family: 'Orbitron', sans-serif;
+  color: #00ff00;
+  font-size: 1.5rem;
+  margin-bottom: 5px;
+}
+
+.order-date {
+  color: #cccccc;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+/* Estados */
+.status-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.status-badge.procesando-pago {
+  background: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.status-badge.pago-aceptado {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.status-badge.procesando-pedido {
+  background: rgba(0, 150, 255, 0.2);
+  color: #0096ff;
+  border: 1px solid rgba(0, 150, 255, 0.3);
+}
+
+.status-badge.en-camino {
+  background: rgba(138, 43, 226, 0.2);
+  color: #8a2be2;
+  border: 1px solid rgba(138, 43, 226, 0.3);
+}
+
+.status-badge.entregado\/retirado {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.order-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.order-info {
+  display: flex;
+  gap: 30px;
+}
+
+.info-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.info-item i {
+  color: #00ff00;
+  font-size: 1.5rem;
+}
+
+.info-item div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.info-label {
+  color: #cccccc;
+  font-size: 0.85rem;
+}
+
+.info-value {
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* Botón de detalle */
+.btn-detail {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid rgba(0, 255, 0, 0.3);
+  color: #00ff00;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.btn-detail:hover {
+  background: rgba(0, 255, 0, 0.2);
+  border-color: #00ff00;
+  transform: translateX(5px);
+}
+
+/* Estado vacío */
+.empty-orders {
+  text-align: center;
+  padding: 80px 20px;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.empty-icon {
+  font-size: 8rem;
+  color: rgba(0, 255, 0, 0.3);
+  margin-bottom: 30px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.empty-orders h2 {
+  font-family: 'Orbitron', sans-serif;
+  color: #00ff00;
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.empty-orders p {
+  color: #cccccc;
+  font-size: 1.2rem;
+  margin-bottom: 40px;
+}
+
+.btn-shop {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #00ff00, #00cc00);
+  color: #000;
+  padding: 15px 40px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: 'Orbitron', sans-serif;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 20px rgba(0, 255, 0, 0.3);
+}
+
+.btn-shop:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 255, 0, 0.5);
+}
+
+/* Animaciones */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .orders-container {
+    padding: 100px 20px 60px;
+  }
+
+  .orders-header h1 {
+    font-size: 2rem;
+  }
+
+  .order-header-card {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .order-body {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .order-info {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+
+  .order-actions {
+    width: 100%;
+  }
+
+  .btn-detail {
+    width: 100%;
+    justify-content: center;
+  }
+}

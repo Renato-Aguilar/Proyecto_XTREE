@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head', { cssFile: 'auth.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('../partials/header') %>
+
+  <main class="auth-container">
+    <div class="auth-box">
+      <div class="auth-header">
+        <h1>Iniciar Sesión</h1>
+        <p>Accede a tu cuenta de XTREE Energy</p>
+      </div>
+
+      <!-- Mensajes Flash -->
+      <% if (error && error.length > 0) { %>
+        <div class="alert alert-error">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <%= error[0] %>
+        </div>
+      <% } %>
+
+      <% if (success && success.length > 0) { %>
+        <div class="alert alert-success">
+          <i class="fa-solid fa-circle-check"></i>
+          <%= success[0] %>
+        </div>
+      <% } %>
+
+      <form action="/login" method="POST" class="auth-form">
+        <div class="form-group">
+          <label for="email">
+            <i class="fa-solid fa-envelope"></i>
+            Email
+          </label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            placeholder="tu@email.com"
+            required
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="contrasena">
+            <i class="fa-solid fa-lock"></i>
+            Contraseña
+          </label>
+          <input 
+            type="password" 
+            id="contrasena" 
+            name="contrasena" 
+            placeholder="••••••••"
+            required
+            autocomplete="current-password"
+          >
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-label">
+            <input type="checkbox" name="remember">
+            <span>Recordarme</span>
+          </label>
+          <a href="/recuperar-password" class="link-text">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          Iniciar Sesión
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>¿No tienes cuenta? <a href="/register" class="link-text">Regístrate aquí</a></p>
+      </div>
+    </div>
+
+    <div class="auth-features">
+      <div class="feature-card">
+        <i class="fa-solid fa-bolt"></i>
+        <h3>Acceso Rápido</h3>
+        <p>Compra tus productos favoritos en segundos</p>
+      </div>
+      <div class="feature-card">
+        <i class="fa-solid fa-shield-halved"></i>
+        <h3>Seguro</h3>
+        <p>Tus datos protegidos con encriptación</p>
+      </div>
+      <div class="feature-card">
+        <i class="fa-solid fa-truck-fast"></i>
+        <h3>Envíos Express</h3>
+        <p>Seguimiento de pedidos en tiempo real</p>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('partials/head', { cssFile: 'comprar.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('partials/header', { activePage: 'comprar' }) %>
+
+  <main class="comprar-container">
+    <section class="comprar-hero">
+      <h1>Compra tu Energía</h1>
+      <p>Elige tu pack de energía natural</p>
+    </section>
+
+    <section class="comprar-grid">
+      <% productos.forEach(producto => { %>
+        <div class="producto-card">
+          <div class="producto-imagen">
+            <img src="<%= producto.imagen_url || '/img/producto-default.png' %>" 
+                 alt="<%= producto.nombre %>">
+          </div>
+          
+          <div class="producto-info">
+            <h3><%= producto.nombre %></h3>
+            <p class="producto-descripcion"><%= producto.descripcion.substring(0, 100) %>...</p>
+            
+            <div class="packs-selector">
+              <h4>Selecciona tu pack:</h4>
+              
+              <% producto.packs.forEach(pack => { %>
+                <div class="pack-option">
+                  <div class="pack-header">
+                    <span class="pack-cantidad">Pack x<%= pack.cantidad %></span>
+                    <% if (pack.descuento > 0) { %>
+                      <span class="pack-descuento">-<%= pack.descuento %>%</span>
+                    <% } %>
+                  </div>
+                  
+                  <div class="pack-precio">
+                    <span class="precio-total">$<%= pack.precioTotal.toLocaleString('es-CL') %></span>
+                    <span class="precio-unitario">$<%= pack.precioUnitario.toLocaleString('es-CL') %> c/u</span>
+                  </div>
+                  
+                  <% if (pack.ahorro > 0) { %>
+                    <p class="pack-ahorro">Ahorras $<%= pack.ahorro.toLocaleString('es-CL') %></p>
+                  <% } %>
+                  
+                  <button class="btn-agregar-carrito" 
+                          data-producto-id="<%= producto.id_producto %>"
+                          data-cantidad="<%= pack.cantidad %>"
+                          data-precio="<%= pack.precioTotal %>">
+                    <i class="fa-solid fa-cart-plus"></i>
+                    Agregar al Carrito
+                  </button>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </section>
+  </main>
+
+  <%- include('partials/footer') %>
+  
+  <script src="/js/global.js"></script>
+  <script src="/js/comprar.js"></script>
+</body>
+</html>

@@ -1,21 +1,23 @@
-// Importamos Express
 const express = require('express');
-
-// Creamos un enrutador (Router) que maneja las rutas específicas de este módulo
 const router = express.Router();
+const { isAuthenticated } = require('../middleware/authMiddleware');
 
-// Importamos los controladores que renderizan las vistas
-const { getIndex, getNosotros, getProductos } = require('../controllers/pageControllers');
+const { getIndex, getNosotros, getProductos } = require('../Controllers/pageControllers');
+const { getComprar, getProductoComprar } = require('../Controllers/productController');
+const { getCheckout, processPayment } = require('../Controllers/checkoutController');
+const { getMisPedidos, getDetallePedido } = require('../Controllers/ordersController');
 
-// Definimos las rutas y qué función se ejecuta en cada una
-// Cuando un usuario entre a "/" se ejecuta getIndex
+// Rutas públicas
 router.get('/', getIndex);
-
-// Cuando un usuario entre a "/nosotros" se ejecuta getNosotros
 router.get('/nosotros', getNosotros);
-
-// Cuando un usuario entre a "/productos" se ejecuta getProductos
 router.get('/productos', getProductos);
+router.get('/comprar', getComprar);
+router.get('/comprar/:id', getProductoComprar);
 
-// Exportamos el router para poder usarlo en app.js
+// Rutas protegidas - Checkout y Pedidos
+router.get('/checkout', isAuthenticated, getCheckout);
+router.post('/checkout/process', isAuthenticated, processPayment);
+router.get('/mis-pedidos', isAuthenticated, getMisPedidos);
+router.get('/pedidos/:id', isAuthenticated, getDetallePedido);
+
 module.exports = router;

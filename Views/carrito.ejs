@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('partials/head', { cssFile: 'carrito.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('partials/header') %>
+
+  <main class="cart-container">
+    <div class="cart-header">
+      <h1>
+        <i class="fa-solid fa-shopping-cart"></i>
+        Tu Carrito de Compras
+      </h1>
+      <p>Revisa tus productos antes de finalizar la compra</p>
+    </div>
+
+    <!-- Mensajes Flash -->
+    <% if (locals.error && error.length > 0) { %>
+      <div class="alert alert-error">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <%= error[0] %>
+      </div>
+    <% } %>
+
+    <% if (locals.success && success.length > 0) { %>
+      <div class="alert alert-success">
+        <i class="fa-solid fa-circle-check"></i>
+        <%= success[0] %>
+      </div>
+    <% } %>
+
+    <% if (cartItems && cartItems.length > 0) { %>
+      <div class="cart-content">
+        <div class="cart-items">
+          <% cartItems.forEach(item => { %>
+            <div class="cart-item" data-id-carrito="<%= item.id_carrito %>">
+              <div class="item-image">
+                <img src="<%= item.imagen %><%= item.imagen && !item.imagen.includes('.') ? '.png' : '' %>" alt="<%= item.nombre %>">
+              </div>
+
+              <div class="item-details">
+                <h3><%= item.nombre %></h3>
+                <p class="item-pack">Pack de <%= item.pack_size %> latas</p>
+                <% if (item.descuento > 0) { %>
+                  <span class="item-discount">
+                    <i class="fa-solid fa-tag"></i>
+                    <%= item.descuento %>% OFF
+                  </span>
+                <% } %>
+                <% if (item.ahorro > 0) { %>
+                  <p class="item-savings">Ahorras: $<%= item.ahorro.toLocaleString('es-CL') %></p>
+                <% } %>
+              </div>
+
+              <div class="item-quantity">
+                <p class="quantity-label">Cantidad</p>
+                <div class="quantity-controls">
+                  <button class="qty-btn" onclick="updateQuantity('<%= item.id_carrito %>', 'decrease')">
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                  <span class="qty-number" id="qty-<%= item.id_carrito %>"><%= item.cantidad %></span>
+                  <button class="qty-btn" onclick="updateQuantity('<%= item.id_carrito %>', 'increase')">
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+                <small class="qty-info"><%= item.pack_size * item.cantidad %> unidades en total</small>
+              </div>
+
+              <div class="item-price">
+                <p class="price-label">Precio Total</p>
+                <p class="price-value">$<%= item.precioTotal.toLocaleString('es-CL') %></p>
+                <% if (item.descuento > 0) { %>
+                  <p class="price-original">$<%= (item.precioUnitario * item.pack_size * item.cantidad).toLocaleString('es-CL') %></p>
+                <% } %>
+              </div>
+
+              <button class="item-remove" onclick="removeFromCart('<%= item.id_carrito %>')">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          <% }) %>
+        </div>
+
+        <div class="cart-summary">
+          <div class="summary-card">
+            <h2>Resumen de Compra</h2>
+
+            <div class="summary-row">
+              <span>Subtotal (<%= totalPacks %> packs)</span>
+              <span>$<%= subtotal.toLocaleString('es-CL') %></span>
+            </div>
+
+            <div class="summary-row">
+              <span>Envío</span>
+              <span class="free-shipping">
+                <i class="fa-solid fa-truck"></i>
+                GRATIS
+              </span>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-row total">
+              <span>Total</span>
+              <span class="total-price">$<%= subtotal.toLocaleString('es-CL') %></span>
+            </div>
+
+            <button class="btn-checkout" onclick="proceedToCheckout()">
+              <i class="fa-solid fa-lock"></i>
+              Proceder al Pago
+            </button>
+
+            <button class="btn-continue" onclick="window.location.href='/comprar'">
+              <i class="fa-solid fa-arrow-left"></i>
+              Seguir Comprando
+            </button>
+
+            <div class="security-badges">
+              <div class="badge">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Compra Segura</span>
+              </div>
+              <div class="badge">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span>30 días devolución</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="empty-cart">
+        <div class="empty-icon">
+          <i class="fa-solid fa-cart-shopping"></i>
+        </div>
+        <h2>Tu carrito está vacío</h2>
+        <p>¡Agrega productos para empezar a comprar!</p>
+        <a href="/comprar" class="btn-shop">
+          <i class="fa-solid fa-bolt"></i>
+          Explorar Productos
+        </a>
+      </div>
+    <% } %>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script src="/js/cart.js"></script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head', { cssFile: 'auth.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('../partials/header') %>
+
+  <main class="auth-container">
+    <div class="auth-box register-box">
+      <div class="auth-header">
+        <h1>Crear Cuenta</h1>
+        <p>Únete a la comunidad XTREE Energy</p>
+      </div>
+
+      <!-- Mensajes Flash -->
+      <% if (error && error.length > 0) { %>
+        <div class="alert alert-error">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <%= error[0] %>
+        </div>
+      <% } %>
+
+      <% if (success && success.length > 0) { %>
+        <div class="alert alert-success">
+          <i class="fa-solid fa-circle-check"></i>
+          <%= success[0] %>
+        </div>
+      <% } %>
+
+      <form action="/register" method="POST" class="auth-form" id="registerForm">
+        <!-- Nombre de Usuario -->
+        <div class="form-group">
+          <label for="nombre_usuario">
+            <i class="fa-solid fa-at"></i>
+            Nombre de Usuario
+          </label>
+          <input 
+            type="text" 
+            id="nombre_usuario" 
+            name="nombre_usuario" 
+            placeholder="usuario123"
+            required
+            minlength="3"
+            pattern="[a-zA-Z0-9_]+"
+            title="Solo letras, números y guión bajo, sin espacios"
+            autocomplete="username"
+          >
+          <small class="form-hint">Sin espacios, mínimo 3 caracteres</small>
+        </div>
+
+        <!-- Nombre y Apellido -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nombre">
+              <i class="fa-solid fa-user"></i>
+              Nombre
+            </label>
+            <input 
+              type="text" 
+              id="nombre" 
+              name="nombre" 
+              placeholder="Juan"
+              required
+              minlength="2"
+              autocomplete="given-name"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="apellido">
+              <i class="fa-solid fa-user"></i>
+              Apellido
+            </label>
+            <input 
+              type="text" 
+              id="apellido" 
+              name="apellido" 
+              placeholder="Pérez"
+              required
+              minlength="2"
+              autocomplete="family-name"
+            >
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email">
+            <i class="fa-solid fa-envelope"></i>
+            Email
+          </label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            placeholder="tu@email.com"
+            required
+            autocomplete="email"
+          >
+        </div>
+
+        <!-- Dirección -->
+        <div class="form-group">
+          <label for="direccion">
+            <i class="fa-solid fa-location-dot"></i>
+            Dirección Completa
+          </label>
+          <input 
+            type="text" 
+            id="direccion" 
+            name="direccion" 
+            placeholder="Calle Principal 123, Comuna, Ciudad"
+            required
+            minlength="10"
+            autocomplete="street-address"
+          >
+          <small class="form-hint">Incluye calle, número, comuna y ciudad</small>
+        </div>
+
+        <!-- Contraseñas -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contrasena">
+              <i class="fa-solid fa-lock"></i>
+              Contraseña
+            </label>
+            <input 
+              type="password" 
+              id="contrasena" 
+              name="contrasena" 
+              placeholder="Mínimo 6 caracteres"
+              required
+              minlength="6"
+              autocomplete="new-password"
+            >
+            <small class="form-hint">Mínimo 6 caracteres</small>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmar_contrasena">
+              <i class="fa-solid fa-lock-open"></i>
+              Confirmar Contraseña
+            </label>
+            <input 
+              type="password" 
+              id="confirmar_contrasena" 
+              name="confirmar_contrasena" 
+              placeholder="Repite tu contraseña"
+              required
+              minlength="6"
+              autocomplete="new-password"
+            >
+          </div>
+        </div>
+
+        <!-- Indicador de fortaleza -->
+        <div class="password-strength" id="passwordStrength">
+          <div class="strength-bar">
+            <div class="strength-fill"></div>
+          </div>
+          <p class="strength-text">Seguridad: <span>-</span></p>
+        </div>
+
+        <!-- Términos y condiciones -->
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" name="terms" required>
+            <span>Acepto los <a href="/terminos" class="link-text" target="_blank">Términos y Condiciones</a> y la <a href="/privacidad" class="link-text" target="_blank">Política de Privacidad</a></span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <i class="fa-solid fa-user-plus"></i>
+          Crear Cuenta
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>¿Ya tienes cuenta? <a href="/login" class="link-text">Inicia sesión aquí</a></p>
+      </div>
+    </div>
+
+    <div class="auth-features">
+      <div class="feature-card">
+        <i class="fa-solid fa-gift"></i>
+        <h3>Bienvenida Especial</h3>
+        <p>10% de descuento en tu primera compra</p>
+      </div>
+      <div class="feature-card">
+        <i class="fa-solid fa-star"></i>
+        <h3>Programa de Puntos</h3>
+        <p>Acumula puntos con cada compra</p>
+      </div>
+      <div class="feature-card">
+        <i class="fa-solid fa-bell"></i>
+        <h3>Notificaciones</h3>
+        <p>Ofertas exclusivas directamente a tu email</p>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    // Validación de contraseñas
+    const form = document.getElementById('registerForm');
+    const password = document.getElementById('contrasena');
+    const confirmPassword = document.getElementById('confirmar_contrasena');
+    const strengthIndicator = document.getElementById('passwordStrength');
+    const usernameInput = document.getElementById('nombre_usuario');
+
+    // Verificar fortaleza de contraseña
+    password.addEventListener('input', function() {
+      const value = this.value;
+      const strengthFill = strengthIndicator.querySelector('.strength-fill');
+      const strengthText = strengthIndicator.querySelector('.strength-text span');
+      
+      let strength = 0;
+      let label = '';
+      let color = '';
+
+      if (value.length >= 6) strength++;
+      if (value.length >= 10) strength++;
+      if (/[a-z]/.test(value) && /[A-Z]/.test(value)) strength++;
+      if (/[0-9]/.test(value)) strength++;
+      if (/[^a-zA-Z0-9]/.test(value)) strength++;
+
+      switch(strength) {
+        case 0:
+        case 1:
+          label = 'Débil';
+          color = '#ff0000';
+          break;
+        case 2:
+        case 3:
+          label = 'Media';
+          color = '#ffa500';
+          break;
+        case 4:
+        case 5:
+          label = 'Fuerte';
+          color = '#00ff00';
+          break;
+      }
+
+      strengthFill.style.width = (strength * 20) + '%';
+      strengthFill.style.background = color;
+      strengthText.textContent = label;
+      strengthText.style.color = color;
+    });
+
+    // Validar nombre de usuario (sin espacios)
+    usernameInput.addEventListener('input', function() {
+      this.value = this.value.replace(/\s/g, '');
+    });
+
+    // Validar que las contraseñas coincidan
+    form.addEventListener('submit', function(e) {
+      if (password.value !== confirmPassword.value) {
+        e.preventDefault();
+        alert('Las contraseñas no coinciden');
+        confirmPassword.focus();
+        return false;
+      }
+
+      if (usernameInput.value.length < 3) {
+        e.preventDefault();
+        alert('El nombre de usuario debe tener al menos 3 caracteres');
+        usernameInput.focus();
+        return false;
+      }
+    });
+  </script>
+</body>
+</html>

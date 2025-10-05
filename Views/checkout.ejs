@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('partials/head', { cssFile: 'checkout.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('partials/header') %>
+
+  <main class="checkout-container">
+    <div class="checkout-header">
+      <h1>
+        <i class="fa-solid fa-lock"></i>
+        Pago Seguro
+      </h1>
+      <p>Completa tu compra de forma segura</p>
+    </div>
+
+    <!-- Mensajes Flash -->
+    <% if (locals.error && error.length > 0) { %>
+      <div class="alert alert-error">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <%= error[0] %>
+      </div>
+    <% } %>
+
+    <div class="checkout-content">
+      <!-- Formulario de pago -->
+      <div class="checkout-form">
+        <form action="/checkout/process" method="POST">
+          <!-- Información de tarjeta -->
+          <div class="form-section">
+            <h2>
+              <i class="fa-solid fa-credit-card"></i>
+              Información de Pago
+            </h2>
+            
+            <div class="form-group">
+              <label for="titular">Titular de la tarjeta</label>
+              <input type="text" id="titular" name="titular" required 
+                     placeholder="Nombre como aparece en la tarjeta">
+            </div>
+
+            <div class="form-group">
+              <label for="numero_tarjeta">Número de tarjeta</label>
+              <input type="text" id="numero_tarjeta" name="numero_tarjeta" required
+                     placeholder="1234 5678 9012 3456" maxlength="19">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fecha_expiracion">Vencimiento</label>
+                <input type="text" id="fecha_expiracion" name="fecha_expiracion" required
+                       placeholder="MM/AA" maxlength="5">
+              </div>
+
+              <div class="form-group">
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" name="cvv" required
+                       placeholder="123" maxlength="4">
+              </div>
+            </div>
+
+            <div class="payment-notice">
+              <i class="fa-solid fa-info-circle"></i>
+              <p><strong>Nota:</strong> Este es un proyecto de demostración. No se procesarán pagos reales.</p>
+            </div>
+          </div>
+
+          <!-- Dirección de envío -->
+          <div class="form-section">
+            <h2>
+              <i class="fa-solid fa-truck"></i>
+              Dirección de Envío
+            </h2>
+            
+            <div class="form-group">
+              <label for="direccion_envio">Dirección completa</label>
+              <textarea id="direccion_envio" name="direccion_envio" required rows="3"
+                        placeholder="Calle, número, depto/casa, comuna, ciudad"><%= userAddress %></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-pay">
+            <i class="fa-solid fa-lock"></i>
+            Pagar $<%= total.toLocaleString('es-CL') %>
+          </button>
+        </form>
+      </div>
+
+      <!-- Resumen del pedido -->
+      <div class="order-summary">
+        <div class="summary-card">
+          <h2>Resumen del Pedido</h2>
+          
+          <div class="summary-items">
+            <% cartItems.forEach(item => { %>
+              <div class="summary-item">
+                <div class="item-name">
+                  <strong><%= item.nombre %></strong>
+                  <br>
+                  <small style="color: #999;">
+                    <%= item.cantidad %> pack<%= item.cantidad > 1 ? 's' : '' %> 
+                    (<%= item.unidades_totales %> unidades)
+                  </small>
+                  <% if (item.descuento > 0) { %>
+                    <br>
+                    <span style="color: #00ff00; font-size: 0.85rem;">
+                      <i class="fa-solid fa-tag"></i> <%= item.descuento %>% OFF
+                    </span>
+                  <% } %>
+                </div>
+                <div class="item-price">
+                  <% if (item.cantidad > 1) { %>
+                    <small style="display: block; color: #999;">
+                      $<%= item.precio_por_pack.toLocaleString('es-CL') %> c/u
+                    </small>
+                  <% } %>
+                  <strong>$<%= item.precio.toLocaleString('es-CL') %></strong>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>$<%= total.toLocaleString('es-CL') %></span>
+          </div>
+
+          <div class="summary-row">
+            <span>Envío:</span>
+            <span class="free">GRATIS</span>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-row total">
+            <span>Total:</span>
+            <span class="total-price">$<%= total.toLocaleString('es-CL') %></span>
+          </div>
+        </div>
+
+        <!-- Información de seguridad -->
+        <div class="security-info">
+          <div class="security-item">
+            <i class="fa-solid fa-shield-halved"></i>
+            <div>
+              <strong>Pago Seguro</strong>
+              <p>Tus datos están protegidos con encriptación SSL</p>
+            </div>
+          </div>
+
+          <div class="security-item">
+            <i class="fa-solid fa-truck-fast"></i>
+            <div>
+              <strong>Envío Gratis</strong>
+              <p>En todos tus pedidos sin mínimo de compra</p>
+            </div>
+          </div>
+
+          <div class="security-item">
+            <i class="fa-solid fa-rotate-left"></i>
+            <div>
+              <strong>Devoluciones</strong>
+              <p>30 días para devolver tu producto</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    // Formatear número de tarjeta automáticamente
+    document.getElementById('numero_tarjeta').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+      let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+      e.target.value = formattedValue;
+    });
+
+    // Formatear fecha de expiración
+    document.getElementById('fecha_expiracion').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length >= 2) {
+        value = value.slice(0, 2) + '/' + value.slice(2, 4);
+      }
+      e.target.value = value;
+    });
+
+    // Solo números en CVV
+    document.getElementById('cvv').addEventListener('input', function(e) {
+      e.target.value = e.target.value.replace(/\D/g, '');
+    });
+  </script>
+</body>
+</html>

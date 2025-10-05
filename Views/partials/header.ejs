@@ -1,22 +1,102 @@
 <header>
   <a href="/" class="logo">XTREE</a>
   <nav>
-    
     <a href="/" class="<%= activePage === 'inicio' ? 'active' : '' %>">Inicio</a>
     <a href="/nosotros" class="<%= activePage === 'nosotros' ? 'active' : '' %>">Nosotros</a>
     <a href="/productos" class="<%= activePage === 'productos' ? 'active' : '' %>">Productos</a>
-    <a href="/comprar">Comprar</a>
+    <a href="/comprar" class="<%= activePage === 'comprar' ? 'active' : '' %>">Comprar</a>
     <a href="#contacto">Contacto</a>
-    <a href="/carrito" class="cart-link <%= activePage === 'carrito' ? 'active' : '' %>">
-      <i class="fa-solid fa-shopping-cart cart-icon"></i>
-      <span class="cart-count">0</span>
-    </a>
-    <!-- Botón de Login -->
-    <div class="auth-buttons">
-      <a href="/login" class="login-btn <%= activePage === 'login' ? 'active' : '' %>">
-        <i class="fa-solid fa-user"></i>
-        <span>Iniciar Sesión</span>
+    
+    <% if (locals.user && locals.user.id) { %>
+      <!-- Solo mostrar carrito si está autenticado -->
+      <a href="/carrito" class="cart-link <%= activePage === 'carrito' ? 'active' : '' %>">
+        <i class="fa-solid fa-shopping-cart cart-icon"></i>
+        <span class="cart-count <%= locals.cartCount > 0 ? 'visible' : '' %>" id="cartCount">
+          <%= locals.cartCount || 0 %>
+        </span>
       </a>
+    <% } %>
+
+    <div class="auth-buttons">
+      <% if (locals.user && locals.user.id) { %>
+        <!-- Usuario autenticado -->
+        <div class="user-menu">
+          <button class="user-btn" id="userMenuBtn">
+            <i class="fa-solid fa-user-circle"></i>
+            <span><%= user.nombre.split(' ')[0] %></span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="user-dropdown" id="userDropdown">
+            <div class="dropdown-header">
+              <i class="fa-solid fa-user-circle"></i>
+              <div>
+                <strong><%= user.nombre %> <%= user.apellido %></strong>
+                <small>@<%= user.username %></small>
+              </div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="/profile" class="dropdown-item">
+              <i class="fa-solid fa-user"></i>
+              Mi Perfil
+            </a>
+            <a href="/mis-pedidos" class="dropdown-item">
+              <i class="fa-solid fa-box"></i>
+              Mis Pedidos
+            </a>
+            <div class="dropdown-divider"></div>
+            <form action="/logout" method="POST" style="margin: 0;">
+              <button type="submit" class="dropdown-item logout-item">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Cerrar Sesión
+              </button>
+            </form>
+          </div>
+        </div>
+      <% } else { %>
+        <!-- Usuario no autenticado -->
+        <a href="/login" class="login-btn <%= activePage === 'login' ? 'active' : '' %>">
+          <i class="fa-solid fa-user"></i>
+          <span>Iniciar Sesión</span>
+        </a>
+      <% } %>
     </div>
   </nav>
 </header>
+
+<script>
+  // Menu dropdown de usuario
+  document.addEventListener('DOMContentLoaded', function() {
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    
+    if (userMenuBtn && userDropdown) {
+      userMenuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        userDropdown.classList.toggle('show');
+      });
+
+      // Cerrar dropdown al hacer click fuera
+      document.addEventListener('click', function(e) {
+        if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+          userDropdown.classList.remove('show');
+        }
+      });
+    }
+  });
+
+  // Actualizar contador del carrito dinámicamente
+  function updateCartCountDisplay(count) {
+    const cartCountElement = document.getElementById('cartCount');
+    if (cartCountElement) {
+      cartCountElement.textContent = count;
+      if (count > 0) {
+        cartCountElement.classList.add('visible');
+      } else {
+        cartCountElement.classList.remove('visible');
+      }
+    }
+  }
+
+  // Función global para que otros scripts actualicen el contador
+  window.updateCartCount = updateCartCountDisplay;
+</script>
