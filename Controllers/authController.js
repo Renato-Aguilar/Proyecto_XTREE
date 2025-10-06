@@ -1,7 +1,8 @@
+// Importar funciones del modelo de usuario y pool de BD
 const { createUser, findUserByEmail, findUserByUsername, verifyPassword, findUserById } = require('../models/userModel');
 const pool = require('../config/db');
 
-// Mostrar formulario de registro
+// GET /register - Muestra formulario de registro
 const getRegister = (req, res) => {
   res.render('auth/register', { 
     title: 'Registro',
@@ -9,54 +10,64 @@ const getRegister = (req, res) => {
   });
 };
 
-// Procesar registro
+// POST /register - Procesa el registro de nuevo usuario
 const postRegister = async (req, res) => {
   try {
+    // Extraer datos del formulario
     const { nombre_usuario, nombre, apellido, email, contrasena, confirmar_contrasena, direccion } = req.body;
 
+    // Validar que todos los campos estén presentes
     if (!nombre_usuario || !nombre || !apellido || !email || !contrasena || !confirmar_contrasena || !direccion) {
       req.flash('error', 'Todos los campos son obligatorios');
       return res.redirect('/register');
     }
 
+    // Validar que las contraseñas coincidan
     if (contrasena !== confirmar_contrasena) {
       req.flash('error', 'Las contraseñas no coinciden');
       return res.redirect('/register');
     }
 
+    // Validar longitud mínima de contraseña
     if (contrasena.length < 6) {
       req.flash('error', 'La contraseña debe tener al menos 6 caracteres');
       return res.redirect('/register');
     }
 
+    // Validar formato de email con regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       req.flash('error', 'El formato del email no es válido');
       return res.redirect('/register');
     }
 
+    // Validar longitud mínima de usuario
     if (nombre_usuario.length < 3) {
       req.flash('error', 'El nombre de usuario debe tener al menos 3 caracteres');
       return res.redirect('/register');
     }
 
+    // Validar que el usuario no contenga espacios
     if (/\s/.test(nombre_usuario)) {
       req.flash('error', 'El nombre de usuario no puede contener espacios');
       return res.redirect('/register');
     }
 
+    // Verificar que el email no esté ya registrado
     const existingEmail = await findUserByEmail(email);
     if (existingEmail) {
       req.flash('error', 'Este email ya está registrado');
       return res.redirect('/register');
     }
 
+    // Verificar que el nombre de usuario no esté en uso
     const existingUsername = await findUserByUsername(nombre_usuario);
     if (existingUsername) {
       req.flash('error', 'Este nombre de usuario ya está en uso');
       return res.redirect('/register');
     }
 
+    // Crear el usuario (la contraseña se hashea en userModel)
     await createUser(nombre_usuario, nombre, apellido, email, contrasena, direccion);
     
     req.flash('success', '¡Registro exitoso! Ahora puedes iniciar sesión');
@@ -68,7 +79,7 @@ const postRegister = async (req, res) => {
   }
 };
 
-// Mostrar formulario de login
+// GET /login - Muestra formulario de login
 const getLogin = (req, res) => {
   res.render('auth/login', { 
     title: 'Iniciar Sesión',
@@ -76,28 +87,32 @@ const getLogin = (req, res) => {
   });
 };
 
-// Procesar login
+// POST /login - Procesa el inicio de sesión
 const postLogin = async (req, res) => {
   try {
     const { email, contrasena } = req.body;
 
+    // Validar que ambos campos estén presentes
     if (!email || !contrasena) {
       req.flash('error', 'Email y contraseña son requeridos');
       return res.redirect('/login');
     }
 
+    // Buscar usuario por email
     const user = await findUserByEmail(email);
     if (!user) {
       req.flash('error', 'Credenciales incorrectas');
       return res.redirect('/login');
     }
 
+    // Verificar contraseña (compara hash)
     const isValidPassword = await verifyPassword(contrasena, user.contrasena);
     if (!isValidPassword) {
       req.flash('error', 'Credenciales incorrectas');
       return res.redirect('/login');
     }
 
+    // Crear sesión guardando datos del usuario
     req.session.userId = user.id_usuario;
     req.session.userName = user.nombre;
     req.session.userLastName = user.apellido;
@@ -107,6 +122,7 @@ const postLogin = async (req, res) => {
 
     req.flash('success', `¡Bienvenido, ${user.nombre}!`);
     
+    // Redirigir a la página que intentaba acceder o al inicio
     const returnTo = req.session.returnTo || '/';
     delete req.session.returnTo;
     res.redirect(returnTo);
@@ -117,24 +133,27 @@ const postLogin = async (req, res) => {
   }
 };
 
-// Cerrar sesión
+// POST /logout - Cierra la sesión del usuario
 const postLogout = (req, res) => {
+  // Destruir sesión en BD y memoria
   req.session.destroy((err) => {
     if (err) {
       console.error('Error al cerrar sesión:', err);
       return res.redirect('/');
     }
     
+    // Eliminar cookie del navegador
     res.clearCookie('connect.sid');
     res.redirect('/?logout=true');
   });
 };
 
-// Obtener perfil de usuario con estadísticas
+// GET /profile - Muestra perfil del usuario con estadísticas
 const getProfile = async (req, res) => {
   try {
     const userId = req.session.userId;
     
+    // Obtener datos del usuario
     const user = await findUserById(userId);
     
     if (!user) {
@@ -142,7 +161,7 @@ const getProfile = async (req, res) => {
       return res.redirect('/');
     }
 
-    // Obtener estadísticas de pedidos
+    // Consultar estadísticas: total de pedidos y gasto acumulado
     const [statsResult] = await pool.query(`
       SELECT 
         COUNT(*) as total_pedidos,
@@ -153,9 +172,9 @@ const getProfile = async (req, res) => {
 
     const stats = statsResult[0];
 
-    // Calcular nivel basado en pedidos (ejemplo simple)
+    // Sistema de niveles basado en cantidad de pedidos
     let nivel = 'Nuevo';
-    let puntosAcumulados = stats.total_pedidos * 100; // 100 puntos por pedido
+    let puntosAcumulados = stats.total_pedidos * 100;
     
     if (stats.total_pedidos >= 10) {
       nivel = 'VIP Oro';
@@ -165,6 +184,7 @@ const getProfile = async (req, res) => {
       nivel = 'Bronce';
     }
 
+    // Renderizar vista con datos del usuario y estadísticas
     res.render('auth/profile', {
       title: 'Mi Perfil',
       activePage: 'profile',

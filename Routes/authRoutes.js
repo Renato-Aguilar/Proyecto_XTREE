@@ -11,15 +11,15 @@ const {
 } = require('../Controllers/authController');
 
 // Rutas de autenticación
-router.get('/register', isGuest, getRegister);
-router.post('/register', isGuest, postRegister);
+router.get('/register', isGuest, getRegister); // Muestra formulario de registro
+router.post('/register', isGuest, postRegister); // Procesa registro de usuario
 
-router.get('/login', isGuest, getLogin);
-router.post('/login', isGuest, postLogin);
+router.get('/login', isGuest, getLogin); // Muestra formulario de login
+router.post('/login', isGuest, postLogin); // Procesa inicio de sesión
 
-router.post('/logout', isAuthenticated, postLogout);
+router.post('/logout', isAuthenticated, postLogout); // Cierra sesión del usuario
 
 // Ruta de perfil protegida
-router.get('/profile', isAuthenticated, getProfile);
+router.get('/profile', isAuthenticated, getProfile); // Muestra perfil del usuario autenticado
 
 module.exports = router;

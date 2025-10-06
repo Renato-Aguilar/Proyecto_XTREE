@@ -1,10 +1,11 @@
 const pool = require('../config/db');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs'); // Librería para hashear contraseñas
 
-// Crear un nuevo usuario con todos los campos de la BD
+// Crear nuevo usuario en la BD
 const createUser = async (nombreUsuario, nombre, apellido, email, contrasena, direccion) => {
   try {
-    // Hash de la contraseña
+    // Hashear contraseña con bcrypt (10 rondas de salt)
+    // NUNCA guardar contraseñas en texto plano
     const hashedPassword = await bcrypt.hash(contrasena, 10);
     
     const [result] = await pool.query(
@@ -12,28 +13,28 @@ const createUser = async (nombreUsuario, nombre, apellido, email, contrasena, di
       [nombreUsuario, nombre, apellido, email, hashedPassword, direccion]
     );
     
-    return result.insertId;
+    return result.insertId; // Retorna ID del usuario creado
   } catch (error) {
     console.error('Error al crear usuario:', error);
     throw error;
   }
 };
 
-// Buscar usuario por email
+// Buscar usuario por email (usado en login)
 const findUserByEmail = async (email) => {
   try {
     const [rows] = await pool.query(
       'SELECT * FROM usuarios WHERE email = ?',
       [email]
     );
-    return rows[0];
+    return rows[0]; // Retorna usuario o undefined
   } catch (error) {
     console.error('Error al buscar usuario:', error);
     throw error;
   }
 };
 
-// Buscar usuario por nombre de usuario
+// Buscar usuario por nombre de usuario (validación en registro)
 const findUserByUsername = async (nombreUsuario) => {
   try {
     const [rows] = await pool.query(
@@ -47,9 +48,10 @@ const findUserByUsername = async (nombreUsuario) => {
   }
 };
 
-// Buscar usuario por ID
+// Buscar usuario por ID (usado en perfil y sesiones)
 const findUserById = async (id) => {
   try {
+    // No incluir contraseña en el SELECT por seguridad
     const [rows] = await pool.query(
       'SELECT id_usuario, nombre_usuario, nombre, apellido, email, direccion, fecha_registro FROM usuarios WHERE id_usuario = ?',
       [id]
@@ -61,9 +63,10 @@ const findUserById = async (id) => {
   }
 };
 
-// Verificar contraseña
+// Comparar contraseña ingresada con hash almacenado
 const verifyPassword = async (plainPassword, hashedPassword) => {
   try {
+    // bcrypt.compare() desencripta y compara de forma segura
     return await bcrypt.compare(plainPassword, hashedPassword);
   } catch (error) {
     console.error('Error al verificar contraseña:', error);
@@ -71,14 +74,14 @@ const verifyPassword = async (plainPassword, hashedPassword) => {
   }
 };
 
-// Actualizar información del usuario
+// Actualizar datos del usuario (excepto contraseña)
 const updateUser = async (id, nombreUsuario, nombre, apellido, direccion) => {
   try {
     const [result] = await pool.query(
       'UPDATE usuarios SET nombre_usuario = ?, nombre = ?, apellido = ?, direccion = ? WHERE id_usuario = ?',
       [nombreUsuario, nombre, apellido, direccion, id]
     );
-    return result.affectedRows > 0;
+    return result.affectedRows > 0; // true si se actualizó algo
   } catch (error) {
     console.error('Error al actualizar usuario:', error);
     throw error;
@@ -86,10 +89,10 @@ const updateUser = async (id, nombreUsuario, nombre, apellido, direccion) => {
 };
 
 module.exports = {
-  createUser,
-  findUserByEmail,
-  findUserByUsername,
-  findUserById,
-  verifyPassword,
-  updateUser
+  createUser,          // Registro de usuarios
+  findUserByEmail,     // Login
+  findUserByUsername,  // Validación unicidad
+  findUserById,        // Cargar perfil
+  verifyPassword,      // Autenticación
+  updateUser          // Editar perfil
 };
