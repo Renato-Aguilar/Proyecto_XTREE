@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('../middleware/authMiddleware');
 
-const { getIndex, getNosotros, getProductos } = require('../Controllers/pageControllers');
+const { getIndex, getNosotros, getProductos } = require('../Controllers/pageController');
 const { getComprar, getProductoComprar } = require('../Controllers/productController');
 const { getCheckout, processPayment } = require('../Controllers/checkoutController');
 const { getMisPedidos, getDetallePedido } = require('../Controllers/ordersController');

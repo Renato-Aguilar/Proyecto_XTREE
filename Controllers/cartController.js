@@ -1,4 +1,4 @@
-const { getProductById, checkStock } = require('../models/productModels');
+const { getProductById, checkStock } = require('../models/productModel');
 const { PACK_CONFIG } = require('./productController');
 const pool = require('../config/db');
 

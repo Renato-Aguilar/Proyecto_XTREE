@@ -1,4 +1,4 @@
-const { getAllProducts, getProductById } = require('../models/productModels');
+const { getAllProducts, getProductById } = require('../models/productModel');
 
 // Configuración de packs disponibles
 const PACK_CONFIG = {

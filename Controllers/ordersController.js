@@ -1,5 +1,17 @@
 const pool = require('../config/db');
 
+// Función helper para iconos de estados
+const getIconForStatus = (estado) => {
+  const icons = {
+    'PROCESANDO PAGO': 'credit-card',
+    'PAGO ACEPTADO': 'check-circle',
+    'PROCESANDO PEDIDO': 'box',
+    'EN CAMINO': 'truck-fast',
+    'ENTREGADO/RETIRADO': 'circle-check'
+  };
+  return icons[estado] || 'circle';
+};
+
 // Ver todos los pedidos del usuario
 const getMisPedidos = async (req, res) => {
   try {
@@ -85,7 +97,8 @@ const getDetallePedido = async (req, res) => {
       activePage: 'mis-pedidos',
       order,
       details,
-      tracking
+      tracking,
+      getIconForStatus  // Pasar la función a la vista
     });
   } catch (error) {
     console.error('Error al obtener detalle del pedido:', error);
