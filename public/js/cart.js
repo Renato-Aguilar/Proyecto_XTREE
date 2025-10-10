@@ -134,10 +134,6 @@ async function addToCart(productoId, packSize) {
 async function removeFromCart(idCarrito) {
   const cartItem = document.querySelector(`[data-id-carrito="${idCarrito}"]`);
   
-  if (!confirm('¿Estás seguro de eliminar este producto del carrito?')) {
-    return;
-  }
-  
   try {
     const response = await fetch('/carrito/eliminar', {
       method: 'POST',
