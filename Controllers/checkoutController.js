@@ -1,5 +1,7 @@
 const pool = require('../config/db');
 const { PACK_CONFIG } = require('./productController');
+const paypal = require('@paypal/checkout-server-sdk');
+const { client: paypalClient } = require('../config/paypal');
 
 // Mostrar página de checkout
 const getCheckout = async (req, res) => {
@@ -55,7 +57,8 @@ const getCheckout = async (req, res) => {
       activePage: 'checkout',
       cartItems: processedItems,
       total,
-      userAddress: req.session.userAddress || ''
+      userAddress: req.session.userAddress || '',
+      paypalClientId: process.env.PAYPAL_CLIENT_ID // Pasar Client ID a la vista
     });
   } catch (error) {
     console.error('Error en checkout:', error);
@@ -64,28 +67,106 @@ const getCheckout = async (req, res) => {
   }
 };
 
-// Procesar pago (simulado para proyecto estudiantil)
-const processPayment = async (req, res) => {
+// Crear orden de PayPal
+const createPayPalOrder = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+
+    // Obtener items del carrito
+    const [cartItems] = await pool.query(`
+      SELECT 
+        c.id_producto,
+        c.cantidad,
+        c.pack_size,
+        p.nombre,
+        p.precio
+      FROM carritos c
+      INNER JOIN productos p ON c.id_producto = p.id_producto
+      WHERE c.id_usuario = ?
+    `, [userId]);
+
+    if (cartItems.length === 0) {
+      return res.status(400).json({ error: 'Carrito vacío' });
+    }
+
+    // Calcular total
+    let total = 0;
+    const items = cartItems.map(item => {
+      const packSize = item.pack_size;
+      const packConfig = PACK_CONFIG[packSize] || { unidades: packSize, descuento: 0 };
+      
+      const precioSinDescuento = item.precio * packConfig.unidades;
+      const precioFinal = Math.round(precioSinDescuento * (1 - packConfig.descuento / 100));
+      const precioTotalLinea = precioFinal * item.cantidad;
+      
+      total += precioTotalLinea;
+
+      return {
+        name: `${item.nombre} - Pack x${packSize}`,
+        unit_amount: {
+          currency_code: 'USD',
+          value: precioFinal.toString()
+        },
+        quantity: item.cantidad.toString()
+      };
+    });
+
+    // Crear orden en PayPal
+    const request = new paypal.orders.OrdersCreateRequest();
+    request.prefer('return=representation');
+    request.requestBody({
+      intent: 'CAPTURE',
+      purchase_units: [{
+        amount: {
+          currency_code: 'USD',
+          value: total.toString(),
+          breakdown: {
+            item_total: {
+              currency_code: 'USD',
+              value: total.toString()
+            }
+          }
+        },
+        items: items
+      }],
+      application_context: {
+        brand_name: 'XTREE Energy',
+        landing_page: 'NO_PREFERENCE',
+        user_action: 'PAY_NOW',
+        return_url: `${req.protocol}://${req.get('host')}/checkout/success`,
+        cancel_url: `${req.protocol}://${req.get('host')}/checkout/cancel`
+      }
+    });
+
+    const order = await paypalClient().execute(request);
+    
+    res.json({ id: order.result.id });
+  } catch (error) {
+    console.error('Error al crear orden PayPal:', error);
+    res.status(500).json({ error: 'Error al procesar el pago' });
+  }
+};
+
+// Capturar pago de PayPal
+const capturePayPalOrder = async (req, res) => {
   const connection = await pool.getConnection();
   
   try {
     await connection.beginTransaction();
 
     const userId = req.session.userId;
-    const { 
-      titular, 
-      numero_tarjeta, 
-      cvv, 
-      fecha_expiracion,
-      direccion_envio 
-    } = req.body;
+    const { orderID } = req.body;
 
-    // Validaciones básicas
-    if (!titular || !numero_tarjeta || !cvv || !fecha_expiracion || !direccion_envio) {
-      throw new Error('Todos los campos son obligatorios');
+    // Capturar el pago en PayPal
+    const request = new paypal.orders.OrdersCaptureRequest(orderID);
+    const capture = await paypalClient().execute(request);
+
+    // Verificar que el pago fue exitoso
+    if (capture.result.status !== 'COMPLETED') {
+      throw new Error('El pago no se completó correctamente');
     }
 
-    // Obtener items del carrito CON pack_size
+    // Obtener items del carrito
     const [cartItems] = await connection.query(`
       SELECT 
         c.id_producto,
@@ -117,16 +198,16 @@ const processPayment = async (req, res) => {
       
       orderDetails.push({
         id_producto: item.id_producto,
-        cantidad: packSize * item.cantidad, // Total de unidades (latas)
+        cantidad: packSize * item.cantidad,
         precio_unitario: item.precio,
         precio_total: precioTotalLinea
       });
     }
 
-    // Crear orden
+    // Crear orden en la BD
     const [orderResult] = await connection.query(
-      'INSERT INTO ordenes (id_usuario, monto_total, fecha_creacion) VALUES (?, ?, NOW())',
-      [userId, total]
+      'INSERT INTO ordenes (id_usuario, monto_total, paypal_order_id, fecha_creacion) VALUES (?, ?, ?, NOW())',
+      [userId, total, orderID]
     );
 
     const orderId = orderResult.insertId;
@@ -139,13 +220,7 @@ const processPayment = async (req, res) => {
       );
     }
 
-    // Crear seguimiento del pedido - Estado inicial: "PROCESANDO PAGO"
-    await connection.query(
-      'INSERT INTO seguimiento_estado (id_orden, id_estado, fecha) VALUES (?, 4, NOW())',
-      [orderId]
-    );
-
-    // Simular procesamiento de pago exitoso
+    // Crear seguimiento del pedido
     await connection.query(
       'INSERT INTO seguimiento_estado (id_orden, id_estado, fecha) VALUES (?, 3, NOW())',
       [orderId]
@@ -156,20 +231,40 @@ const processPayment = async (req, res) => {
 
     await connection.commit();
 
-    req.flash('success', `¡Pago procesado exitosamente! Tu pedido #${orderId} está en camino.`);
-    res.redirect('/mis-pedidos');
+    res.json({ 
+      success: true, 
+      orderId: orderId,
+      message: `¡Pago exitoso! Tu pedido #${orderId} está en camino.`
+    });
 
   } catch (error) {
     await connection.rollback();
-    console.error('Error al procesar pago:', error);
-    req.flash('error', error.message || 'Error al procesar el pago');
-    res.redirect('/checkout');
+    console.error('Error al capturar pago:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message || 'Error al procesar el pago' 
+    });
   } finally {
     connection.release();
   }
 };
 
+// Página de éxito
+const getCheckoutSuccess = (req, res) => {
+  req.flash('success', '¡Pago procesado exitosamente! Tu pedido está en camino.');
+  res.redirect('/mis-pedidos');
+};
+
+// Página de cancelación
+const getCheckoutCancel = (req, res) => {
+  req.flash('error', 'Pago cancelado. Puedes intentar nuevamente cuando estés listo.');
+  res.redirect('/checkout');
+};
+
 module.exports = {
   getCheckout,
-  processPayment
+  createPayPalOrder,
+  capturePayPalOrder,
+  getCheckoutSuccess,
+  getCheckoutCancel
 };

@@ -1,6 +1,7 @@
-/* Estilos específicos de la página (index.css) */
+/* ===========================
+   HERO SECTION
+=========================== */
 
-/* Hero Section */
 .hero {
   display: flex;
   justify-content: space-between;
@@ -64,20 +65,28 @@
   animation: fadeInUp 1s ease-out 0.9s both;
 }
 
-.btn {
-  background: transparent;
-  border: 2px solid #00ff00;
-  color: #00ff00;
-  padding: 15px 30px;
+/* IMPORTANTE: Sobrescribir estilos de Bootstrap para .btn */
+.buttons .btn,
+.hero .btn {
+  background: transparent !important;
+  border: 2px solid #00ff00 !important;
+  color: #00ff00 !important;
+  padding: 15px 30px !important;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 8px !important;
   font-weight: 600;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  display: inline-block;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: center;
+  vertical-align: middle;
 }
 
-.btn::before {
+.buttons .btn::before,
+.hero .btn::before {
   content: '';
   position: absolute;
   top: 0;
@@ -88,20 +97,22 @@
   transition: left 0.5s ease;
 }
 
-.btn:hover::before {
+.buttons .btn:hover::before,
+.hero .btn:hover::before {
   left: 100%;
 }
 
-.btn:hover {
-  background-color: #00ff00;
-  color: #000;
+.buttons .btn:hover,
+.hero .btn:hover {
+  background-color: #00ff00 !important;
+  color: #000 !important;
   box-shadow: 0 0 20px #00ff00;
   transform: translateY(-2px);
 }
 
 .btn-secondary {
-  background: rgba(0, 255, 0, 0.1);
-  border: 2px solid #00ff00;
+  background: rgba(0, 255, 0, 0.1) !important;
+  border: 2px solid #00ff00 !important;
 }
 
 .hero-image {
@@ -125,7 +136,10 @@
   filter: drop-shadow(0 0 50px #00ff00) drop-shadow(0 0 100px rgba(0, 255, 0, 0.5));
 }
 
-/* Features Section */
+/* ===========================
+   FEATURES SECTION
+=========================== */
+
 .features {
   padding: 100px 50px;
   text-align: center;
@@ -140,14 +154,6 @@
   text-shadow: 0 0 20px #00ff00;
 }
 
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 40px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
 .feature {
   background: linear-gradient(145deg, #111, #0a0a0a);
   padding: 40px 30px;
@@ -156,6 +162,7 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  height: 100%;
 }
 
 .feature::before {
@@ -197,9 +204,13 @@
 .feature p {
   line-height: 1.6;
   color: #cccccc;
+  margin: 0;
 }
 
-/* Ingredients Section */
+/* ===========================
+   INGREDIENTS SECTION
+=========================== */
+
 .ingredients {
   padding: 100px 50px;
   background: linear-gradient(180deg, #0a0a0a 0%, #000 100%);
@@ -214,14 +225,6 @@
   text-shadow: 0 0 20px #00ff00;
 }
 
-.ingredients-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
 .ingredient {
   background: rgba(0, 255, 0, 0.05);
   padding: 30px;
@@ -229,6 +232,7 @@
   border: 1px solid rgba(0, 255, 0, 0.3);
   text-align: center;
   transition: all 0.3s ease;
+  height: 100%;
 }
 
 .ingredient:hover {
@@ -246,10 +250,57 @@
   color: #cccccc;
   font-size: 0.9rem;
   line-height: 1.5;
+  margin: 0;
 }
-nav a:hover::after, nav a.active::after {
-  width: 100%;
+
+/* ===========================
+   RESPONSIVE PARA BOOTSTRAP
+=========================== */
+
+@media (max-width: 991px) {
+  .hero {
+    padding: 100px 30px 60px;
+  }
+  
+  .hero-content {
+    text-align: center;
+    max-width: 100%;
+  }
+  
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .hero-image {
+    margin-top: 40px;
+    text-align: center;
+  }
+  
+  .hero-image img {
+    max-width: 250px;
+  }
+  
+  .buttons {
+    justify-content: center;
+  }
 }
-nav a:hover, nav a.active {
-  color: #00ff00;
+
+@media (max-width: 768px) {
+  .features {
+    padding: 60px 20px;
+  }
+  
+  .ingredients {
+    padding: 60px 20px;
+  }
+  
+  .feature,
+  .ingredient {
+    padding: 25px 20px;
+  }
+  
+  .features h2,
+  .ingredients h2 {
+    font-size: 2rem;
+  }
 }

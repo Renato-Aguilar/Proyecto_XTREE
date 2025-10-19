@@ -391,22 +391,88 @@
 
 /* Estilos para impresión */
 @media print {
+  /* Ocultar elementos no necesarios */
   .bg-animation,
   header,
   footer,
   .actions-card,
   .help-card {
-    display: none;
+    display: none !important;
   }
 
+  /* Usar una sola columna para mejor uso de espacio */
   .order-detail-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
+  /* Tarjetas imprimibles */
   .order-info-card,
   .order-products-card,
   .tracking-card {
-    border: 1px solid #000;
+    border: 1px solid #000 !important;
+    background: #fff !important;
+    color: #000 !important;
     page-break-inside: avoid;
+  }
+
+  /* Cambiar textos verdes a negro */
+  h2,
+  h3,
+  .order-info-card h2,
+  .order-products-card h2,
+  .tracking-card h2,
+  .product-info h3,
+  .timeline-content h3,
+  .actions-card h3,
+  .help-card h3,
+  .info-label,
+  .info-value,
+  .info-value.total,
+  .total-label,
+  .total-amount,
+  .contact-info p,
+  .contact-info i,
+  .timeline-item.completed .timeline-marker i,
+  .timeline-item.active .timeline-marker i {
+    color: #000 !important;
+  }
+
+  /* Cambiar bordes verdes a negro */
+  .order-info-card,
+  .order-products-card,
+  .tracking-card,
+  .product-item,
+  .product-image,
+  .timeline-marker,
+  .contact-info,
+  .info-row,
+  .info-row.total-row,
+  .timeline-item::before {
+    border-color: #000 !important;
+  }
+
+  /* Iconos en negro */
+  .timeline-marker i {
+    color: #000 !important;
+  }
+
+  /* Fondos translúcidos a blanco */
+  .order-info-card,
+  .order-products-card,
+  .tracking-card,
+  .product-item,
+  .product-image,
+  .timeline-marker,
+  .contact-info {
+    background: #fff !important;
+  }
+
+  /* Eliminar animaciones y sombras */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
   }
 }

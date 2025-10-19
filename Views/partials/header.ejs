@@ -1,102 +1,123 @@
 <header>
-  <a href="/" class="logo">XTREE</a>
-  <nav>
-    <a href="/" class="<%= activePage === 'inicio' ? 'active' : '' %>">Inicio</a>
-    <a href="/nosotros" class="<%= activePage === 'nosotros' ? 'active' : '' %>">Nosotros</a>
-    <a href="/productos" class="<%= activePage === 'productos' ? 'active' : '' %>">Productos</a>
-    <a href="/comprar" class="<%= activePage === 'comprar' ? 'active' : '' %>">Comprar</a>
-    <a href="#contacto">Contacto</a>
-    
-    <% if (locals.user && locals.user.id) { %>
-      <!-- Solo mostrar carrito si está autenticado -->
-      <a href="/carrito" class="cart-link <%= activePage === 'carrito' ? 'active' : '' %>">
-        <i class="fa-solid fa-shopping-cart cart-icon"></i>
-        <span class="cart-count <%= locals.cartCount > 0 ? 'visible' : '' %>" id="cartCount">
-          <%= locals.cartCount || 0 %>
-        </span>
-      </a>
-    <% } %>
+  <nav class="navbar navbar-expand-lg navbar-dark w-100">
+    <div class="container-fluid px-4">
+      <!-- Logo -->
+      <a href="/" class="navbar-brand logo">XTREE</a>
+      
+      <!-- Toggler para móvil -->
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-    <div class="auth-buttons">
-      <% if (locals.user && locals.user.id) { %>
-        <!-- Usuario autenticado -->
-        <div class="user-menu">
-          <button class="user-btn" id="userMenuBtn">
-            <i class="fa-solid fa-user-circle"></i>
-            <span><%= user.nombre.split(' ')[0] %></span>
-            <i class="fa-solid fa-chevron-down"></i>
-          </button>
-          <div class="user-dropdown" id="userDropdown">
-            <div class="dropdown-header">
-              <i class="fa-solid fa-user-circle"></i>
-              <div>
-                <strong><%= user.nombre %> <%= user.apellido %></strong>
-                <small>@<%= user.username %></small>
+      <!-- Links de navegación -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-3">
+          <li class="nav-item">
+            <a class="nav-link <%= activePage === 'inicio' ? 'active' : '' %>" href="/">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= activePage === 'nosotros' ? 'active' : '' %>" href="/nosotros">Nosotros</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= activePage === 'productos' ? 'active' : '' %>" href="/productos">Productos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= activePage === 'comprar' ? 'active' : '' %>" href="/comprar">Comprar</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#contacto">Contacto</a>
+          </li>
+          
+          <!-- Carrito (solo si está autenticado) -->
+          <% if (locals.user && locals.user.id) { %>
+            <li class="nav-item">
+              <a href="/carrito" class="nav-link cart-link <%= activePage === 'carrito' ? 'active' : '' %>">
+                <i class="fa-solid fa-shopping-cart cart-icon"></i>
+                <span class="cart-count <%= locals.cartCount > 0 ? 'visible' : '' %>" id="cartCount">
+                  <%= locals.cartCount || 0 %>
+                </span>
+              </a>
+            </li>
+          <% } %>
+
+          <!-- Botón de Auth/Usuario -->
+          <li class="nav-item">
+            <% if (locals.user && locals.user.id) { %>
+              <!-- Usuario autenticado - Dropdown Bootstrap -->
+              <div class="dropdown">
+                <button class="btn btn-outline-success dropdown-toggle d-flex align-items-center gap-2" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fa-solid fa-user-circle"></i>
+                  <span><%= user.nombre.split(' ')[0] %></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark border-success" aria-labelledby="userDropdown">
+                  <li class="dropdown-header">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="fa-solid fa-user-circle fs-3 text-success"></i>
+                      <div>
+                        <strong class="d-block"><%= user.nombre %> <%= user.apellido %></strong>
+                        <small class="text-muted">@<%= user.username %></small>
+                      </div>
+                    </div>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <a class="dropdown-item" href="/profile">
+                      <i class="fa-solid fa-user me-2"></i> Mi Perfil
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="/mis-pedidos">
+                      <i class="fa-solid fa-box me-2"></i> Mis Pedidos
+                    </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <form action="/logout" method="POST" class="m-0">
+                      <button type="submit" class="dropdown-item text-danger">
+                        <i class="fa-solid fa-right-from-bracket me-2"></i> Cerrar Sesión
+                      </button>
+                    </form>
+                  </li>
+                </ul>
               </div>
-            </div>
-            <div class="dropdown-divider"></div>
-            <a href="/profile" class="dropdown-item">
-              <i class="fa-solid fa-user"></i>
-              Mi Perfil
-            </a>
-            <a href="/mis-pedidos" class="dropdown-item">
-              <i class="fa-solid fa-box"></i>
-              Mis Pedidos
-            </a>
-            <div class="dropdown-divider"></div>
-            <form action="/logout" method="POST" style="margin: 0;">
-              <button type="submit" class="dropdown-item logout-item">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                Cerrar Sesión
-              </button>
-            </form>
-          </div>
-        </div>
-      <% } else { %>
-        <!-- Usuario no autenticado -->
-        <a href="/login" class="login-btn <%= activePage === 'login' ? 'active' : '' %>">
-          <i class="fa-solid fa-user"></i>
-          <span>Iniciar Sesión</span>
-        </a>
-      <% } %>
+            <% } else { %>
+              <!-- Usuario no autenticado -->
+              <a href="/login" class="btn btn-outline-success <%= activePage === 'login' ? 'active' : '' %>">
+                <i class="fa-solid fa-user me-2"></i>
+                <span>Iniciar Sesión</span>
+              </a>
+            <% } %>
+          </li>
+        </ul>
+      </div>
     </div>
   </nav>
 </header>
 
 <script>
-  // Menu dropdown de usuario
-  document.addEventListener('DOMContentLoaded', function() {
-    const userMenuBtn = document.getElementById('userMenuBtn');
-    const userDropdown = document.getElementById('userDropdown');
-    
-    if (userMenuBtn && userDropdown) {
-      userMenuBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        userDropdown.classList.toggle('show');
-      });
-
-      // Cerrar dropdown al hacer click fuera
-      document.addEventListener('click', function(e) {
-        if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
-          userDropdown.classList.remove('show');
-        }
-      });
-    }
-  });
-
-  // Actualizar contador del carrito dinámicamente
-  function updateCartCountDisplay(count) {
-    const cartCountElement = document.getElementById('cartCount');
-    if (cartCountElement) {
-      cartCountElement.textContent = count;
-      if (count > 0) {
-        cartCountElement.classList.add('visible');
-      } else {
-        cartCountElement.classList.remove('visible');
-      }
+// Actualizar contador del carrito dinámicamente
+function updateCartCountDisplay(count) {
+  const cartCountElement = document.getElementById('cartCount');
+  if (cartCountElement) {
+    cartCountElement.textContent = count;
+    if (count > 0) {
+      cartCountElement.classList.add('visible');
+    } else {
+      cartCountElement.classList.remove('visible');
     }
   }
+}
 
-  // Función global para que otros scripts actualicen el contador
-  window.updateCartCount = updateCartCountDisplay;
+// Función global para que otros scripts actualicen el contador
+window.updateCartCount = updateCartCountDisplay;
+
+// Scroll effect para header
+window.addEventListener('scroll', () => {
+  const header = document.querySelector('header');
+  if (window.scrollY > 50) {
+    header.classList.add('scrolled');
+  } else {
+    header.classList.remove('scrolled');
+  }
+});
 </script>

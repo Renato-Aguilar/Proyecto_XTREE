@@ -12,6 +12,7 @@
   "author": "Yo",
   "license": "ISC",
   "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
     "bcryptjs": "^3.0.2",
     "connect-flash": "^0.1.1",
     "ejs": "^3.1.10",
