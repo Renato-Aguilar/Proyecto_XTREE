@@ -64,6 +64,7 @@
   gap: 12px;
   font-size: 0.95rem;
   animation: slideIn 0.3s ease-out;
+  transition: opacity 0.3s ease;
 }
 
 @keyframes slideIn {
@@ -110,6 +111,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  position: relative;
 }
 
 .form-group label {
@@ -137,6 +139,11 @@
   font-family: 'Inter', sans-serif;
 }
 
+/* Input con botón de toggle contraseña */
+.form-group:has(.password-toggle) input {
+  padding-right: 45px;
+}
+
 .form-group input:focus {
   outline: none;
   border-color: #00ff00;
@@ -152,6 +159,38 @@
   color: rgba(255, 255, 255, 0.5);
   font-size: 0.85rem;
   margin-top: -5px;
+}
+
+/* Botón para mostrar/ocultar contraseña */
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: rgba(0, 255, 0, 0.6);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  margin-top: 12px; /* Ajustar por el label */
+}
+
+.password-toggle:hover {
+  color: #00ff00;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.password-toggle:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.password-toggle i {
+  font-size: 1.1rem;
 }
 
 /* Indicador de fortaleza de contraseña */
@@ -181,6 +220,56 @@
 
 .strength-text span {
   font-weight: 600;
+}
+
+/* Requisitos de contraseña */
+.password-requirements {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  border-radius: 10px;
+  padding: 15px;
+  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.requirement {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.requirement i {
+  font-size: 1rem;
+  color: #ff6666;
+  transition: all 0.3s ease;
+}
+
+.requirement.met {
+  color: rgba(0, 255, 0, 0.9);
+}
+
+.requirement.met i {
+  color: #00ff00;
+  animation: checkBounce 0.4s ease-out;
+}
+
+@keyframes checkBounce {
+  0% { 
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% { 
+    transform: scale(1.2);
+  }
+  100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Opciones del formulario */
@@ -332,4 +421,28 @@
   color: #cccccc;
   font-size: 0.95rem;
   line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .auth-box {
+    padding: 30px 20px;
+  }
+
+  .register-box {
+    max-width: 100%;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .password-requirements {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .requirement {
+    font-size: 0.8rem;
+  }
 }

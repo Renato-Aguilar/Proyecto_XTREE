@@ -130,12 +130,11 @@
               type="password" 
               id="contrasena" 
               name="contrasena" 
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo 8 caracteres"
               required
-              minlength="6"
+              minlength="8"
               autocomplete="new-password"
             >
-            <small class="form-hint">Mínimo 6 caracteres</small>
           </div>
 
           <div class="form-group">
@@ -149,7 +148,7 @@
               name="confirmar_contrasena" 
               placeholder="Repite tu contraseña"
               required
-              minlength="6"
+              minlength="8"
               autocomplete="new-password"
             >
           </div>
@@ -162,6 +161,8 @@
           </div>
           <p class="strength-text">Seguridad: <span>-</span></p>
         </div>
+
+        <!-- Los requisitos se insertan aquí dinámicamente con JavaScript -->
 
         <!-- Términos y condiciones -->
         <div class="form-group checkbox-group">
@@ -201,9 +202,8 @@
     </div>
   </main>
 
+  <%- include('../partials/footer') %>
 
-<%- include('../partials/footer') %>
-
-<script src="/js/register.js"></script>
+  <script src="/js/register.js"></script>
 </body>
 </html>

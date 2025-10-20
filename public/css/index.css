@@ -118,6 +118,9 @@
 .hero-image {
   position: relative;
   animation: float 6s ease-in-out infinite;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 @keyframes float {
@@ -260,11 +263,13 @@
 @media (max-width: 991px) {
   .hero {
     padding: 100px 30px 60px;
+    flex-direction: column;
+    text-align: center;
   }
   
   .hero-content {
-    text-align: center;
     max-width: 100%;
+    order: 1;
   }
   
   .hero h1 {
@@ -272,8 +277,9 @@
   }
   
   .hero-image {
+    order: 2;
     margin-top: 40px;
-    text-align: center;
+    justify-content: center;
   }
   
   .hero-image img {
@@ -302,5 +308,22 @@
   .features h2,
   .ingredients h2 {
     font-size: 2rem;
+  }
+}
+
+/* Asegurar que en desktop la imagen esté a la derecha */
+@media (min-width: 992px) {
+  .hero {
+    flex-direction: row;
+  }
+  
+  .hero-content {
+    order: 1;
+    text-align: left;
+  }
+  
+  .hero-image {
+    order: 2;
+    justify-content: flex-end;
   }
 }

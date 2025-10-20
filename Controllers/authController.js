@@ -2,6 +2,25 @@
 const { createUser, findUserByEmail, findUserByUsername, verifyPassword, findUserById } = require('../models/userModel');
 const pool = require('../config/db');
 
+// Función para validar requisitos de contraseña
+const validatePasswordStrength = (password) => {
+  const requirements = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[!@#$%^&*(),.?":{}|<>_\-]/.test(password)
+  };
+
+  const allMet = Object.values(requirements).every(Boolean);
+  
+  return {
+    isValid: allMet,
+    requirements: requirements,
+    message: allMet ? 'Contraseña válida' : 'La contraseña debe tener al menos 8 caracteres, incluyendo mayúsculas, minúsculas, números y caracteres especiales'
+  };
+};
+
 // GET /register - Muestra formulario de registro
 const getRegister = (req, res) => {
   res.render('auth/register', { 
@@ -28,9 +47,10 @@ const postRegister = async (req, res) => {
       return res.redirect('/register');
     }
 
-    // Validar longitud mínima de contraseña
-    if (contrasena.length < 6) {
-      req.flash('error', 'La contraseña debe tener al menos 6 caracteres');
+    // Validar fortaleza de contraseña
+    const passwordValidation = validatePasswordStrength(contrasena);
+    if (!passwordValidation.isValid) {
+      req.flash('error', passwordValidation.message);
       return res.redirect('/register');
     }
 
