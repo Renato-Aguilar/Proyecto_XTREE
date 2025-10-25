@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head', { cssFile: 'admin.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('../partials/header') %>
+
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+
+    <main class="admin-content">
+      <div class="admin-header">
+        <div>
+          <h1>
+            <i class="fa-solid fa-ticket"></i>
+            Solicitud #<%= solicitud.id_solicitud %>
+          </h1>
+          <p><%= solicitud.asunto %></p>
+        </div>
+        <a href="/admin/ayuda" class="btn-back">
+          <i class="fa-solid fa-arrow-left"></i>
+          Volver
+        </a>
+      </div>
+
+      <!-- Mensajes Flash -->
+      <% if (locals.error && error.length > 0) { %>
+        <div class="alert alert-error">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <%= error[0] %>
+        </div>
+      <% } %>
+
+      <% if (locals.success && success.length > 0) { %>
+        <div class="alert alert-success">
+          <i class="fa-solid fa-circle-check"></i>
+          <%= success[0] %>
+        </div>
+      <% } %>
+
+      <div class="help-detail-layout">
+        <!-- Información del Cliente y Solicitud -->
+        <div class="help-detail-sidebar">
+          <div class="detail-card">
+            <h3>
+              <i class="fa-solid fa-user"></i>
+              Información del Cliente
+            </h3>
+            <div class="info-list">
+              <div class="info-item">
+                <span class="label">Nombre:</span>
+                <span class="value"><%= solicitud.nombre %> <%= solicitud.apellido %></span>
+              </div>
+              <div class="info-item">
+                <span class="label">Email:</span>
+                <span class="value"><%= solicitud.email %></span>
+              </div>
+              <div class="info-item">
+                <span class="label">Dirección:</span>
+                <span class="value"><%= solicitud.direccion || 'No especificada' %></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <h3>
+              <i class="fa-solid fa-info-circle"></i>
+              Estado de Solicitud
+            </h3>
+            <div class="info-list">
+              <div class="info-item">
+                <span class="label">Estado:</span>
+                <span class="status-badge <%= solicitud.estado %>">
+                  <%= solicitud.estado.replace('_', ' ').toUpperCase() %>
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="label">Prioridad:</span>
+                <span class="priority-badge <%= solicitud.prioridad %>">
+                  <%= solicitud.prioridad.toUpperCase() %>
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="label">Creada:</span>
+                <span class="value"><%= new Date(solicitud.fecha_creacion).toLocaleString('es-CL') %></span>
+              </div>
+              <% if (solicitud.id_orden) { %>
+                <div class="info-item">
+                  <span class="label">Pedido Relacionado:</span>
+                  <a href="/pedidos/<%= solicitud.id_orden %>" class="value link">#<%= solicitud.id_orden %></a>
+                </div>
+              <% } %>
+              <% if (solicitud.atendido_por) { %>
+                <div class="info-item">
+                  <span class="label">Atendido por:</span>
+                  <span class="value"><%= solicitud.admin_nombre %> <%= solicitud.admin_apellido %></span>
+                </div>
+              <% } %>
+            </div>
+          </div>
+
+          <% if (solicitud.notas_admin) { %>
+            <div class="detail-card">
+              <h3>
+                <i class="fa-solid fa-note-sticky"></i>
+                Notas Internas
+              </h3>
+              <p class="notes-text"><%= solicitud.notas_admin %></p>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Conversación -->
+        <div class="help-conversation">
+          <div class="conversation-card">
+            <h3>Conversación</h3>
+
+            <!-- Mensaje Inicial del Usuario -->
+            <div class="message user-message">
+              <div class="message-header">
+                <div class="message-avatar user">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="message-info">
+                  <strong><%= solicitud.nombre %> <%= solicitud.apellido %></strong>
+                  <span class="message-date"><%= new Date(solicitud.fecha_creacion).toLocaleString('es-CL') %></span>
+                </div>
+              </div>
+              <div class="message-body">
+                <%= solicitud.mensaje %>
+              </div>
+            </div>
+
+            <!-- Respuestas -->
+            <% respuestas.forEach(respuesta => { %>
+              <div class="message <%= respuesta.es_admin ? 'admin-message' : 'user-message' %>">
+                <div class="message-header">
+                  <div class="message-avatar <%= respuesta.es_admin ? 'admin' : 'user' %>">
+                    <i class="fa-solid fa-<%= respuesta.es_admin ? 'headset' : 'user' %>"></i>
+                  </div>
+                  <div class="message-info">
+                    <strong><%= respuesta.nombre %> <%= respuesta.apellido %></strong>
+                    <% if (respuesta.es_admin) { %>
+                      <span class="badge-admin">Admin</span>
+                    <% } %>
+                    <span class="message-date"><%= new Date(respuesta.fecha_creacion).toLocaleString('es-CL') %></span>
+                  </div>
+                </div>
+                <div class="message-body">
+                  <%= respuesta.mensaje %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+
+          <!-- Formulario de Respuesta -->
+          <div class="response-card">
+            <h3>
+              <i class="fa-solid fa-reply"></i>
+              Responder a la Solicitud
+            </h3>
+            <form action="/admin/ayuda/<%= solicitud.id_solicitud %>/responder" method="POST">
+              <div class="form-group">
+                <label>Tu Respuesta</label>
+                <textarea name="mensaje" rows="5" required 
+                  placeholder="Escribe tu respuesta al cliente..."></textarea>
+              </div>
+
+              <div class="form-group">
+                <label>Cambiar Estado</label>
+                <select name="estado" required>
+                  <option value="pendiente" <%= solicitud.estado === 'pendiente' ? 'selected' : '' %>>Pendiente</option>
+                  <option value="en_proceso" <%= solicitud.estado === 'en_proceso' ? 'selected' : '' %>>En Proceso</option>
+                  <option value="resuelta" <%= solicitud.estado === 'resuelta' ? 'selected' : '' %>>Resuelta</option>
+                  <option value="cerrada" <%= solicitud.estado === 'cerrada' ? 'selected' : '' %>>Cerrada</option>
+                </select>
+              </div>
+
+              <button type="submit" class="btn-send-response">
+                <i class="fa-solid fa-paper-plane"></i>
+                Enviar Respuesta
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/footer') %>
+<script src="/js/admin-modal.js"></script>
+</body>
+</html>

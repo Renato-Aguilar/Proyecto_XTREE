@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head', { cssFile: 'ayuda.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('../partials/header') %>
+
+  <main class="help-container">
+    <div class="help-header">
+      <h1>
+        <i class="fa-solid fa-ticket"></i>
+        Mis Solicitudes de Ayuda
+      </h1>
+      <p>Historial de tus consultas y soporte</p>
+      <a href="/ayuda/nueva" class="btn-new-ticket">
+        <i class="fa-solid fa-plus"></i>
+        Nueva Solicitud
+      </a>
+    </div>
+
+    <!-- Mensajes Flash -->
+    <% if (locals.error && error.length > 0) { %>
+      <div class="alert alert-error">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <%= error[0] %>
+      </div>
+    <% } %>
+
+    <% if (locals.success && success.length > 0) { %>
+      <div class="alert alert-success">
+        <i class="fa-solid fa-circle-check"></i>
+        <%= success[0] %>
+      </div>
+    <% } %>
+
+    <% if (solicitudes.length > 0) { %>
+      <div class="tickets-grid">
+        <% solicitudes.forEach(solicitud => { %>
+          <div class="ticket-card priority-<%= solicitud.prioridad %> status-<%= solicitud.estado %>">
+            <div class="ticket-header">
+              <div class="ticket-badges">
+                <span class="ticket-id">#<%= solicitud.id_solicitud %></span>
+                <span class="priority-badge <%= solicitud.prioridad %>">
+                  <i class="fa-solid fa-flag"></i>
+                  <%= solicitud.prioridad.toUpperCase() %>
+                </span>
+                <span class="status-badge <%= solicitud.estado %>">
+                  <%= solicitud.estado.replace('_', ' ').toUpperCase() %>
+                </span>
+              </div>
+              <span class="ticket-date">
+                <%= new Date(solicitud.fecha_creacion).toLocaleDateString('es-CL') %>
+              </span>
+            </div>
+
+            <h3 class="ticket-subject"><%= solicitud.asunto %></h3>
+
+            <p class="ticket-message">
+              <%= solicitud.mensaje.substring(0, 120) %><%= solicitud.mensaje.length > 120 ? '...' : '' %>
+            </p>
+
+            <div class="ticket-meta">
+              <% if (solicitud.id_orden) { %>
+                <div class="ticket-order">
+                  <i class="fa-solid fa-shopping-bag"></i>
+                  <span>Pedido #<%= solicitud.id_orden %></span>
+                </div>
+              <% } %>
+
+              <% if (solicitud.atendido_por) { %>
+                <div class="ticket-assigned">
+                  <i class="fa-solid fa-user-check"></i>
+                  <span>Atendido por: <%= solicitud.admin_nombre %></span>
+                </div>
+              <% } %>
+
+              <div class="ticket-responses">
+                <i class="fa-solid fa-comment"></i>
+                <span><%= solicitud.total_respuestas %> respuesta<%= solicitud.total_respuestas !== 1 ? 's' : '' %></span>
+              </div>
+            </div>
+
+            <div class="ticket-footer">
+              <a href="/ayuda/solicitud/<%= solicitud.id_solicitud %>" class="btn-view-ticket">
+                <i class="fa-solid fa-eye"></i>
+                Ver Detalle
+              </a>
+
+              <% if (solicitud.estado !== 'cerrada') { %>
+                <button 
+                  onclick="cerrarSolicitud(<%= solicitud.id_solicitud %>)" 
+                  class="btn-close-ticket"
+                  title="Cerrar solicitud">
+                  <i class="fa-solid fa-lock"></i>
+                </button>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fa-solid fa-inbox"></i>
+        </div>
+        <h2>No tienes solicitudes aún</h2>
+        <p>¿Necesitas ayuda con algo? Crea tu primera solicitud</p>
+        <a href="/ayuda/nueva" class="btn-create-first">
+          <i class="fa-solid fa-plus-circle"></i>
+          Crear Primera Solicitud
+        </a>
+      </div>
+    <% } %>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    function cerrarSolicitud(id) {
+      if (confirm('¿Estás seguro de cerrar esta solicitud? No podrás agregar más respuestas.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/ayuda/solicitud/${id}/cerrar`;
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+  </script>
+</body>
+</html>

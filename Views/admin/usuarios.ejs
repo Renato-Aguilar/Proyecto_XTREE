@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head', { cssFile: 'admin.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('../partials/header') %>
+
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+
+    <main class="admin-content">
+      <div class="admin-header">
+        <h1>
+          <i class="fa-solid fa-users"></i>
+          Gestión de Usuarios
+        </h1>
+        <p>Administra los usuarios registrados en el sistema</p>
+        <% if (!isSuperAdmin) { %>
+          <div class="alert alert-info" style="margin-top: 15px;">
+            <i class="fa-solid fa-info-circle"></i>
+            Solo los superadministradores pueden cambiar roles de usuarios
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Mensajes Flash -->
+      <% if (locals.error && error.length > 0) { %>
+        <div class="alert alert-error">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <%= error[0] %>
+        </div>
+      <% } %>
+
+      <% if (locals.success && success.length > 0) { %>
+        <div class="alert alert-success">
+          <i class="fa-solid fa-circle-check"></i>
+          <%= success[0] %>
+        </div>
+      <% } %>
+
+      <!-- Tabla de Usuarios -->
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Nombre Completo</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Registro</th>
+                <th>Pedidos</th>
+                <th>Gasto Total</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (usuarios.length > 0) { %>
+                <% usuarios.forEach(usuario => { %>
+                  <tr>
+                    <td class="font-bold">#<%= usuario.id_usuario %></td>
+                    <td>@<%= usuario.nombre_usuario %></td>
+                    <td><%= usuario.nombre %> <%= usuario.apellido %></td>
+                    <td><%= usuario.email %></td>
+                    <td>
+                      <span class="role-badge <%= usuario.rol %>">
+                        <i class="fa-solid fa-<%= usuario.rol === 'superadmin' ? 'crown' : usuario.rol === 'admin' ? 'shield' : 'user' %>"></i>
+                        <%= usuario.rol.toUpperCase() %>
+                      </span>
+                    </td>
+                    <td><%= new Date(usuario.fecha_registro).toLocaleDateString('es-CL') %></td>
+                    <td class="text-center"><%= usuario.total_pedidos %></td>
+                    <td class="text-green font-bold">$<%= usuario.gasto_total.toLocaleString('es-CL') %></td>
+                    <td class="actions-cell">
+                      <button 
+                        onclick="editarUsuario(<%= usuario.id_usuario %>, '<%= usuario.nombre %>', '<%= usuario.apellido %>', '<%= usuario.email %>', '<%= usuario.rol %>')" 
+                        class="btn-action"
+                        title="Editar Usuario">
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="9" class="text-center">
+                    <div class="empty-state">
+                      <i class="fa-solid fa-users-slash"></i>
+                      <p>No hay usuarios registrados</p>
+                    </div>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/footer') %>
+
+  <!-- Modal para Editar Usuario -->
+  <div id="modalEditarUsuario" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Usuario</h3>
+        <button class="modal-close" onclick="cerrarModal()">&times;</button>
+      </div>
+      <form id="formEditarUsuario" method="POST">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" name="nombre" id="edit_nombre" required>
+          </div>
+
+          <div class="form-group">
+            <label>Apellido</label>
+            <input type="text" name="apellido" id="edit_apellido" required>
+          </div>
+
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" id="edit_email" required>
+          </div>
+
+          <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" name="direccion" id="edit_direccion" placeholder="Actualizar dirección (opcional)">
+          </div>
+
+          <% if (isSuperAdmin) { %>
+            <div class="form-group">
+              <label>Rol</label>
+              <select name="rol" id="edit_rol">
+                <option value="cliente">Cliente</option>
+                <option value="admin">Administrador</option>
+                <option value="superadmin">Super Administrador</option>
+              </select>
+              <small class="form-hint">
+                <i class="fa-solid fa-warning"></i>
+                Cambiar roles es una acción sensible. Úsala con precaución.
+              </small>
+            </div>
+          <% } %>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">
+            <i class="fa-solid fa-save"></i>
+            Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function editarUsuario(id, nombre, apellido, email, rol) {
+      const modal = document.getElementById('modalEditarUsuario');
+      const form = document.getElementById('formEditarUsuario');
+      
+      form.action = `/admin/usuarios/${id}`;
+      document.getElementById('edit_nombre').value = nombre;
+      document.getElementById('edit_apellido').value = apellido;
+      document.getElementById('edit_email').value = email;
+      
+      <% if (isSuperAdmin) { %>
+        document.getElementById('edit_rol').value = rol;
+      <% } %>
+      
+      modal.style.display = 'flex';
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalEditarUsuario').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('modalEditarUsuario');
+      if (event.target === modal) {
+        cerrarModal();
+      }
+    }
+  </script>
+<script src="/js/admin-modal.js"></script>
+</body>
+</html>

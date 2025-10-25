@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head', { cssFile: 'admin.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('../partials/header') %>
+
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+
+    <main class="admin-content">
+      <div class="admin-header">
+        <h1>
+          <i class="fa-solid fa-shopping-bag"></i>
+          Gestión de Pedidos
+        </h1>
+        <p>Administra y monitorea todos los pedidos del sistema</p>
+      </div>
+
+      <!-- Mensajes Flash -->
+      <% if (locals.error && error.length > 0) { %>
+        <div class="alert alert-error">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <%= error[0] %>
+        </div>
+      <% } %>
+
+      <% if (locals.success && success.length > 0) { %>
+        <div class="alert alert-success">
+          <i class="fa-solid fa-circle-check"></i>
+          <%= success[0] %>
+        </div>
+      <% } %>
+
+      <!-- Filtros -->
+      <div class="filters-bar">
+        <a href="/admin/pedidos" class="filter-btn <%= filtro === 'todos' ? 'active' : '' %>">
+          <i class="fa-solid fa-list"></i>
+          Todos los Pedidos
+        </a>
+        <a href="/admin/pedidos?filtro=problemas" class="filter-btn <%= filtro === 'problemas' ? 'active' : '' %>">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          Con Problemas
+        </a>
+      </div>
+
+      <!-- Tabla de Pedidos -->
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID Pedido</th>
+                <th>Cliente</th>
+                <th>Email</th>
+                <th>Monto Total</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th>Problema</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (pedidos.length > 0) { %>
+                <% pedidos.forEach(pedido => { %>
+                  <tr class="<%= pedido.tiene_problema ? 'row-problema' : '' %>">
+                    <td class="font-bold">#<%= pedido.id_orden %></td>
+                    <td><%= pedido.nombre %> <%= pedido.apellido %></td>
+                    <td><%= pedido.email %></td>
+                    <td class="text-green font-bold">$<%= pedido.monto_total.toLocaleString('es-CL') %></td>
+                    <td>
+                      <span class="badge badge-<%= pedido.estado ? 'success' : 'warning' %>">
+                        <%= pedido.estado || 'PROCESANDO' %>
+                      </span>
+                    </td>
+                    <td><%= new Date(pedido.fecha_creacion).toLocaleDateString('es-CL') %></td>
+                    <td>
+                      <% if (pedido.tiene_problema) { %>
+                        <span class="badge badge-danger">
+                          <i class="fa-solid fa-exclamation-triangle"></i>
+                          Con Problema
+                        </span>
+                      <% } else { %>
+                        <span class="badge badge-success">OK</span>
+                      <% } %>
+                    </td>
+                    <td class="actions-cell">
+                      <a href="/pedidos/<%= pedido.id_orden %>" class="btn-action" title="Ver Detalle">
+                        <i class="fa-solid fa-eye"></i>
+                      </a>
+                      
+                      <% if (pedido.tiene_problema) { %>
+                        <button 
+                          onclick="resolverProblema(<%= pedido.id_orden %>)" 
+                          class="btn-action success" 
+                          title="Marcar como Resuelto">
+                          <i class="fa-solid fa-check"></i>
+                        </button>
+                      <% } else { %>
+                        <button 
+                          onclick="marcarProblema(<%= pedido.id_orden %>)" 
+                          class="btn-action danger" 
+                          title="Reportar Problema">
+                          <i class="fa-solid fa-exclamation"></i>
+                        </button>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <% if (pedido.tiene_problema && pedido.descripcion_problema) { %>
+                    <tr class="problema-detail">
+                      <td colspan="8">
+                        <div class="problema-box">
+                          <i class="fa-solid fa-info-circle"></i>
+                          <strong>Problema reportado:</strong> <%= pedido.descripcion_problema %>
+                        </div>
+                      </td>
+                    </tr>
+                  <% } %>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="8" class="text-center">
+                    <div class="empty-state">
+                      <i class="fa-solid fa-inbox"></i>
+                      <p>No hay pedidos para mostrar</p>
+                    </div>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/footer') %>
+
+  <!-- Modal para Marcar Problema -->
+  <div id="modalProblema" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Reportar Problema en Pedido</h3>
+        <button class="modal-close" onclick="cerrarModal()">&times;</button>
+      </div>
+      <form id="formProblema" method="POST">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Descripción del Problema</label>
+            <textarea name="descripcion_problema" rows="4" required 
+              placeholder="Describe el problema con el pedido..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-danger">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            Reportar Problema
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function marcarProblema(idOrden) {
+      const modal = document.getElementById('modalProblema');
+      const form = document.getElementById('formProblema');
+      form.action = `/admin/pedidos/${idOrden}/problema`;
+      modal.style.display = 'flex';
+    }
+
+    function resolverProblema(idOrden) {
+      if (confirm('¿Confirmas que el problema ha sido resuelto?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/pedidos/${idOrden}/resolver`;
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalProblema').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('modalProblema');
+      if (event.target === modal) {
+        cerrarModal();
+      }
+    }
+  </script>
+<script src="/js/admin-modal.js"></script>
+</body>
+</html>

@@ -24,17 +24,28 @@
           <li class="nav-item">
             <a class="nav-link <%= activePage === 'comprar' ? 'active' : '' %>" href="/comprar">Comprar</a>
           </li>
+          
+          <!-- Link de Ayuda (solo usuarios autenticados) -->
+          <% if (typeof user !== 'undefined' && user && user.id) { %>
+            <li class="nav-item">
+              <a class="nav-link <%= activePage === 'ayuda' ? 'active' : '' %>" href="/ayuda/mis-solicitudes">
+                <i class="fa-solid fa-headset"></i>
+                Ayuda
+              </a>
+            </li>
+          <% } %>
+          
           <li class="nav-item">
             <a class="nav-link" href="#contacto">Contacto</a>
           </li>
           
           <!-- Carrito (solo si está autenticado) -->
-          <% if (locals.user && locals.user.id) { %>
+          <% if (typeof user !== 'undefined' && user && user.id) { %>
             <li class="nav-item">
               <a href="/carrito" class="nav-link cart-link <%= activePage === 'carrito' ? 'active' : '' %>">
                 <i class="fa-solid fa-shopping-cart cart-icon"></i>
-                <span class="cart-count <%= locals.cartCount > 0 ? 'visible' : '' %>" id="cartCount">
-                  <%= locals.cartCount || 0 %>
+                <span class="cart-count <%= cartCount > 0 ? 'visible' : '' %>" id="cartCount">
+                  <%= cartCount || 0 %>
                 </span>
               </a>
             </li>
@@ -42,20 +53,20 @@
 
           <!-- Botón de Auth/Usuario -->
           <li class="nav-item">
-            <% if (locals.user && locals.user.id) { %>
+            <% if (typeof user !== 'undefined' && user && user.id) { %>
               <!-- Usuario autenticado - Dropdown Bootstrap -->
               <div class="dropdown">
                 <button class="btn btn-outline-success dropdown-toggle d-flex align-items-center gap-2" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="fa-solid fa-user-circle"></i>
-                  <span><%= user.nombre.split(' ')[0] %></span>
+                  <span><%= (user.nombre && user.nombre.split) ? user.nombre.split(' ')[0] : user.nombre || 'Usuario' %></span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark border-success" aria-labelledby="userDropdown">
                   <li class="dropdown-header">
                     <div class="d-flex align-items-center gap-2">
                       <i class="fa-solid fa-user-circle fs-3 text-success"></i>
                       <div>
-                        <strong class="d-block"><%= user.nombre %> <%= user.apellido %></strong>
-                        <small class="text-muted">@<%= user.username %></small>
+                        <strong class="d-block"><%= user.nombre %> <%= user.apellido || '' %></strong>
+                        <small class="text-muted">@<%= user.username || user.nombre_usuario || '' %></small>
                       </div>
                     </div>
                   </li>
@@ -70,6 +81,17 @@
                       <i class="fa-solid fa-box me-2"></i> Mis Pedidos
                     </a>
                   </li>
+                  
+                  <!-- Link al Panel Admin (solo para admin/superadmin) -->
+                  <% if (typeof user !== 'undefined' && user && (user.rol === 'admin' || user.rol === 'superadmin')) { %>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <a class="dropdown-item" href="/admin/dashboard" style="color: #00ff00;">
+                        <i class="fa-solid fa-shield-halved me-2"></i> Panel Admin
+                      </a>
+                    </li>
+                  <% } %>
+                  
                   <li><hr class="dropdown-divider"></li>
                   <li>
                     <form action="/logout" method="POST" class="m-0">

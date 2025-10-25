@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head', { cssFile: 'admin.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('../partials/header') %>
+
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+
+    <main class="admin-content">
+      <div class="admin-header">
+        <h1>
+          <i class="fa-solid fa-box"></i>
+          Gestión de Productos
+        </h1>
+        <p>Administra el catálogo de productos XTREE Energy</p>
+      </div>
+
+      <!-- Mensajes Flash -->
+      <% if (locals.error && error.length > 0) { %>
+        <div class="alert alert-error">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <%= error[0] %>
+        </div>
+      <% } %>
+
+      <% if (locals.success && success.length > 0) { %>
+        <div class="alert alert-success">
+          <i class="fa-solid fa-circle-check"></i>
+          <%= success[0] %>
+        </div>
+      <% } %>
+
+      <div class="products-grid">
+        <% productos.forEach(producto => { %>
+          <div class="product-admin-card">
+            <div class="product-image-admin">
+              <img src="<%= producto.imagen_url || '/img/default.png' %>" alt="<%= producto.nombre %>">
+              <% if (producto.stock < 20) { %>
+                <span class="stock-alert critical">
+                  <i class="fa-solid fa-exclamation-triangle"></i>
+                  Stock Crítico
+                </span>
+              <% } else if (producto.stock < 50) { %>
+                <span class="stock-alert warning">
+                  <i class="fa-solid fa-exclamation"></i>
+                  Stock Bajo
+                </span>
+              <% } %>
+            </div>
+
+            <div class="product-info-admin">
+              <h3><%= producto.nombre %></h3>
+              <p class="product-id">ID: #<%= producto.id_producto %></p>
+              
+              <form action="/admin/productos/<%= producto.id_producto %>" method="POST" class="product-form">
+                <div class="form-group">
+                  <label>Nombre del Producto</label>
+                  <input type="text" name="nombre" value="<%= producto.nombre %>" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Descripción</label>
+                  <textarea name="descripcion" rows="4" required><%= producto.descripcion %></textarea>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Precio (CLP)</label>
+                    <input type="number" name="precio" value="<%= producto.precio %>" min="0" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Stock</label>
+                    <input type="number" name="stock" value="<%= producto.stock || 0 %>" min="0" required>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn-save">
+                  <i class="fa-solid fa-save"></i>
+                  Guardar Cambios
+                </button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/footer') %>
+<script src="/js/admin-modal.js"></script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head', { cssFile: 'ayuda.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('../partials/header') %>
+
+  <main class="help-container">
+    <div class="help-header">
+      <div>
+        <h1>
+          <i class="fa-solid fa-ticket"></i>
+          Solicitud #<%= solicitud.id_solicitud %>
+        </h1>
+        <p><%= solicitud.asunto %></p>
+      </div>
+      <a href="/ayuda/mis-solicitudes" class="btn-back">
+        <i class="fa-solid fa-arrow-left"></i>
+        Volver
+      </a>
+    </div>
+
+    <!-- Mensajes Flash -->
+    <% if (locals.error && error.length > 0) { %>
+      <div class="alert alert-error">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <%= error[0] %>
+      </div>
+    <% } %>
+
+    <% if (locals.success && success.length > 0) { %>
+      <div class="alert alert-success">
+        <i class="fa-solid fa-circle-check"></i>
+        <%= success[0] %>
+      </div>
+    <% } %>
+
+    <div class="detail-layout">
+      <!-- Información de la Solicitud -->
+      <div class="detail-sidebar">
+        <div class="info-card">
+          <h3>
+            <i class="fa-solid fa-info-circle"></i>
+            Estado de tu Solicitud
+          </h3>
+
+          <div class="status-indicator status-<%= solicitud.estado %>">
+            <div class="status-icon">
+              <% if (solicitud.estado === 'pendiente') { %>
+                <i class="fa-solid fa-clock"></i>
+              <% } else if (solicitud.estado === 'en_proceso') { %>
+                <i class="fa-solid fa-spinner"></i>
+              <% } else if (solicitud.estado === 'resuelta') { %>
+                <i class="fa-solid fa-check-circle"></i>
+              <% } else { %>
+                <i class="fa-solid fa-lock"></i>
+              <% } %>
+            </div>
+            <div class="status-info">
+              <strong><%= solicitud.estado.replace('_', ' ').toUpperCase() %></strong>
+              <% if (solicitud.estado === 'pendiente') { %>
+                <p>En espera de asignación</p>
+              <% } else if (solicitud.estado === 'en_proceso') { %>
+                <p>Nuestro equipo está trabajando en tu solicitud</p>
+              <% } else if (solicitud.estado === 'resuelta') { %>
+                <p>Tu solicitud ha sido resuelta</p>
+              <% } else { %>
+                <p>Solicitud cerrada</p>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="info-list">
+            <div class="info-item">
+              <span class="label">
+                <i class="fa-solid fa-flag"></i>
+                Prioridad:
+              </span>
+              <span class="priority-badge <%= solicitud.prioridad %>">
+                <%= solicitud.prioridad.toUpperCase() %>
+              </span>
+            </div>
+
+            <div class="info-item">
+              <span class="label">
+                <i class="fa-solid fa-calendar"></i>
+                Creada:
+              </span>
+              <span class="value">
+                <%= new Date(solicitud.fecha_creacion).toLocaleDateString('es-CL', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                }) %>
+              </span>
+            </div>
+
+            <% if (solicitud.id_orden) { %>
+              <div class="info-item">
+                <span class="label">
+                  <i class="fa-solid fa-shopping-bag"></i>
+                  Pedido:
+                </span>
+                <a href="/pedidos/<%= solicitud.id_orden %>" class="value link">
+                  #<%= solicitud.id_orden %>
+                </a>
+              </div>
+            <% } %>
+
+            <% if (solicitud.atendido_por) { %>
+              <div class="info-item">
+                <span class="label">
+                  <i class="fa-solid fa-user-check"></i>
+                  Atendido por:
+                </span>
+                <span class="value">
+                  <%= solicitud.admin_nombre %> <%= solicitud.admin_apellido %>
+                </span>
+              </div>
+            <% } %>
+          </div>
+
+          <% if (solicitud.estado !== 'cerrada') { %>
+            <button onclick="cerrarSolicitud()" class="btn-close-full">
+              <i class="fa-solid fa-lock"></i>
+              Cerrar Solicitud
+            </button>
+          <% } %>
+        </div>
+
+        <div class="help-tip-card">
+          <h3>
+            <i class="fa-solid fa-lightbulb"></i>
+            Consejos
+          </h3>
+          <ul>
+            <li>Responde rápido para acelerar la resolución</li>
+            <li>Proporciona toda la información posible</li>
+            <li>Si tu problema está resuelto, cierra la solicitud</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Conversación -->
+      <div class="conversation-section">
+        <div class="conversation-card">
+          <h3>
+            <i class="fa-solid fa-comments"></i>
+            Conversación
+          </h3>
+
+          <!-- Mensaje Inicial -->
+          <div class="message user-message">
+            <div class="message-header">
+              <div class="message-avatar user">
+                <i class="fa-solid fa-user"></i>
+              </div>
+              <div class="message-info">
+                <strong>Tú</strong>
+                <span class="message-date">
+                  <%= new Date(solicitud.fecha_creacion).toLocaleString('es-CL') %>
+                </span>
+              </div>
+            </div>
+            <div class="message-body">
+              <%= solicitud.mensaje %>
+            </div>
+          </div>
+
+          <!-- Respuestas -->
+          <% respuestas.forEach(respuesta => { %>
+            <div class="message <%= respuesta.es_admin ? 'admin-message' : 'user-message' %>">
+              <div class="message-header">
+                <div class="message-avatar <%= respuesta.es_admin ? 'admin' : 'user' %>">
+                  <i class="fa-solid fa-<%= respuesta.es_admin ? 'headset' : 'user' %>"></i>
+                </div>
+                <div class="message-info">
+                  <strong>
+                    <%= respuesta.es_admin ? respuesta.nombre + ' ' + respuesta.apellido : 'Tú' %>
+                  </strong>
+                  <% if (respuesta.es_admin) { %>
+                    <span class="badge-staff">Equipo XTREE</span>
+                  <% } %>
+                  <span class="message-date">
+                    <%= new Date(respuesta.fecha_creacion).toLocaleString('es-CL') %>
+                  </span>
+                </div>
+              </div>
+              <div class="message-body">
+                <%= respuesta.mensaje %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+
+        <!-- Formulario de Respuesta -->
+        <% if (solicitud.estado !== 'cerrada') { %>
+          <div class="response-card">
+            <h3>
+              <i class="fa-solid fa-reply"></i>
+              Agregar Respuesta
+            </h3>
+
+            <% if (solicitud.estado === 'resuelta') { %>
+              <div class="alert alert-info">
+                <i class="fa-solid fa-info-circle"></i>
+                Esta solicitud fue marcada como resuelta. Si necesitas más ayuda, agrega un mensaje y la reabriremos.
+              </div>
+            <% } %>
+
+            <form action="/ayuda/solicitud/<%= solicitud.id_solicitud %>/responder" method="POST">
+              <div class="form-group">
+                <textarea 
+                  name="mensaje" 
+                  rows="4" 
+                  placeholder="Escribe tu respuesta aquí..."
+                  required
+                  minlength="10"
+                  id="respuestaMensaje"
+                ></textarea>
+                <small class="form-hint">Mínimo 10 caracteres</small>
+              </div>
+
+              <button type="submit" class="btn-send">
+                <i class="fa-solid fa-paper-plane"></i>
+                Enviar Respuesta
+              </button>
+            </form>
+          </div>
+        <% } else { %>
+          <div class="closed-message">
+            <i class="fa-solid fa-lock"></i>
+            <p>Esta solicitud está cerrada. Si necesitas más ayuda, <a href="/ayuda/nueva">crea una nueva solicitud</a>.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    function cerrarSolicitud() {
+      if (confirm('¿Estás seguro de cerrar esta solicitud? No podrás agregar más respuestas.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/ayuda/solicitud/<%= solicitud.id_solicitud %>/cerrar';
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+
+    // Contador de caracteres
+    const mensajeTextarea = document.getElementById('respuestaMensaje');
+    if (mensajeTextarea) {
+      mensajeTextarea.addEventListener('input', () => {
+        const hint = mensajeTextarea.nextElementSibling;
+        const currentLength = mensajeTextarea.value.length;
+        
+        if (currentLength < 10) {
+          hint.textContent = `Faltan ${10 - currentLength} caracteres`;
+          hint.style.color = '#ff6666';
+        } else {
+          hint.textContent = `${currentLength} caracteres`;
+          hint.style.color = '#00ff00';
+        }
+      });
+    }
+
+    // Auto-scroll al último mensaje
+    window.addEventListener('load', () => {
+      const messages = document.querySelectorAll('.message');
+      if (messages.length > 0) {
+        messages[messages.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  </script>
+</body>
+</html>

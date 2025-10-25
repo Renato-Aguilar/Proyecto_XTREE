@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head', { cssFile: 'admin.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('../partials/header') %>
+
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+
+    <main class="admin-content">
+      <div class="admin-header">
+        <h1>
+          <i class="fa-solid fa-chart-line"></i>
+          Dashboard Administrativo
+        </h1>
+        <p>Vista general del sistema XTREE Energy</p>
+      </div>
+
+      <!-- Mensajes Flash -->
+      <% if (locals.error && error.length > 0) { %>
+        <div class="alert alert-error">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <%= error[0] %>
+        </div>
+      <% } %>
+
+      <% if (locals.success && success.length > 0) { %>
+        <div class="alert alert-success">
+          <i class="fa-solid fa-circle-check"></i>
+          <%= success[0] %>
+        </div>
+      <% } %>
+
+      <!-- Tarjetas de Estadísticas -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= stats.total_clientes %></h3>
+            <p>Clientes Registrados</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon green">
+            <i class="fa-solid fa-shopping-cart"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= stats.total_ordenes %></h3>
+            <p>Pedidos Totales</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon yellow">
+            <i class="fa-solid fa-dollar-sign"></i>
+          </div>
+          <div class="stat-info">
+            <h3>$<%= stats.ventas_totales.toLocaleString('es-CL') %></h3>
+            <p>Ventas Totales</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon purple">
+            <i class="fa-solid fa-calendar-day"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= stats.ordenes_hoy %></h3>
+            <p>Pedidos Hoy</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alertas Importantes -->
+      <div class="alerts-section">
+        <% if (stats.ayudas_pendientes > 0) { %>
+          <div class="alert alert-warning">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            <span>Tienes <strong><%= stats.ayudas_pendientes %></strong> solicitudes de ayuda pendientes</span>
+            <a href="/admin/ayuda" class="btn-small">Ver</a>
+          </div>
+        <% } %>
+
+        <% if (stats.ordenes_con_problema > 0) { %>
+          <div class="alert alert-danger">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span><strong><%= stats.ordenes_con_problema %></strong> pedidos tienen problemas reportados</span>
+            <a href="/admin/pedidos?filtro=problemas" class="btn-small">Revisar</a>
+          </div>
+        <% } %>
+
+        <% if (lowStock.length > 0) { %>
+          <div class="alert alert-info">
+            <i class="fa-solid fa-box"></i>
+            <span><strong><%= lowStock.length %></strong> productos con stock bajo</span>
+            <a href="/admin/productos" class="btn-small">Ver Inventario</a>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Secciones de Contenido -->
+      <div class="dashboard-grid">
+        <!-- Últimas Órdenes -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h2>
+              <i class="fa-solid fa-shopping-bag"></i>
+              Últimos Pedidos
+            </h2>
+            <a href="/admin/pedidos" class="btn-link">Ver todos</a>
+          </div>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Cliente</th>
+                  <th>Monto</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (recentOrders.length > 0) { %>
+                  <% recentOrders.forEach(order => { %>
+                    <tr>
+                      <td>#<%= order.id_orden %></td>
+                      <td><%= order.nombre %> <%= order.apellido %></td>
+                      <td class="text-green">$<%= order.monto_total.toLocaleString('es-CL') %></td>
+                      <td><%= new Date(order.fecha_creacion).toLocaleDateString('es-CL') %></td>
+                      <td>
+                        <% if (order.tiene_problema) { %>
+                          <span class="badge badge-danger">Con Problema</span>
+                        <% } else { %>
+                          <span class="badge badge-success">Normal</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="5" class="text-center">No hay pedidos recientes</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Solicitudes de Ayuda -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h2>
+              <i class="fa-solid fa-headset"></i>
+              Solicitudes de Ayuda
+            </h2>
+            <a href="/admin/ayuda" class="btn-link">Ver todas</a>
+          </div>
+          <div class="help-list">
+            <% if (recentHelp.length > 0) { %>
+              <% recentHelp.forEach(help => { %>
+                <div class="help-item">
+                  <div class="help-header">
+                    <span class="help-priority <%= help.prioridad %>">
+                      <%= help.prioridad.toUpperCase() %>
+                    </span>
+                    <span class="help-status <%= help.estado %>">
+                      <%= help.estado.replace('_', ' ').toUpperCase() %>
+                    </span>
+                  </div>
+                  <h4><%= help.asunto %></h4>
+                  <p class="help-user">
+                    <i class="fa-solid fa-user"></i>
+                    <%= help.nombre %> <%= help.apellido %>
+                  </p>
+                  <p class="help-date">
+                    <%= new Date(help.fecha_creacion).toLocaleString('es-CL') %>
+                  </p>
+                  <a href="/admin/ayuda/<%= help.id_solicitud %>" class="btn-view">
+                    Ver Detalle <i class="fa-solid fa-arrow-right"></i>
+                  </a>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p class="text-center">No hay solicitudes recientes</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Productos con Stock Bajo -->
+      <% if (lowStock.length > 0) { %>
+        <div class="dashboard-card full-width">
+          <div class="card-header">
+            <h2>
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              Productos con Stock Bajo
+            </h2>
+          </div>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Producto</th>
+                  <th>Stock Actual</th>
+                  <th>Precio</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% lowStock.forEach(product => { %>
+                  <tr>
+                    <td>#<%= product.id_producto %></td>
+                    <td><%= product.nombre %></td>
+                    <td>
+                      <span class="stock-badge <%= product.cantidad < 20 ? 'critical' : 'warning' %>">
+                        <%= product.cantidad %> unidades
+                      </span>
+                    </td>
+                    <td>$<%= product.precio.toLocaleString('es-CL') %></td>
+                    <td>
+                      <a href="/admin/productos" class="btn-action">
+                        <i class="fa-solid fa-pen"></i>
+                      </a>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% } %>
+    </main>
+  </div>
+
+  <%- include('../partials/footer') %>
+<script src="/js/admin-modal.js"></script>
+</body>
+</html>

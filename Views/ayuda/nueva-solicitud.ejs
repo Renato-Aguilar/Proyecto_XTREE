@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head', { cssFile: 'ayuda.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('../partials/header') %>
+
+  <main class="help-container">
+    <div class="help-header">
+      <h1>
+        <i class="fa-solid fa-headset"></i>
+        Centro de Ayuda
+      </h1>
+      <p>¿Necesitas ayuda? Estamos aquí para ti</p>
+    </div>
+
+    <!-- Mensajes Flash -->
+    <% if (locals.error && error.length > 0) { %>
+      <div class="alert alert-error">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <%= error[0] %>
+      </div>
+    <% } %>
+
+    <% if (locals.success && success.length > 0) { %>
+      <div class="alert alert-success">
+        <i class="fa-solid fa-circle-check"></i>
+        <%= success[0] %>
+      </div>
+    <% } %>
+
+    <div class="help-content">
+      <!-- Formulario de Nueva Solicitud -->
+      <div class="form-card">
+        <div class="card-header">
+          <h2>
+            <i class="fa-solid fa-plus-circle"></i>
+            Nueva Solicitud de Ayuda
+          </h2>
+        </div>
+
+        <form action="/ayuda/nueva" method="POST" class="help-form">
+          <div class="form-group">
+            <label for="asunto">
+              <i class="fa-solid fa-tag"></i>
+              Asunto
+            </label>
+            <input 
+              type="text" 
+              id="asunto" 
+              name="asunto" 
+              placeholder="¿En qué podemos ayudarte?"
+              required
+              minlength="5"
+              maxlength="200"
+            >
+            <small class="form-hint">Describe brevemente tu problema (mínimo 5 caracteres)</small>
+          </div>
+
+          <div class="form-group">
+            <label for="mensaje">
+              <i class="fa-solid fa-message"></i>
+              Mensaje
+            </label>
+            <textarea 
+              id="mensaje" 
+              name="mensaje" 
+              rows="6"
+              placeholder="Describe tu problema en detalle. Cuanta más información nos proporciones, mejor podremos ayudarte."
+              required
+              minlength="20"
+            ></textarea>
+            <small class="form-hint">Detalla tu problema (mínimo 20 caracteres)</small>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="prioridad">
+                <i class="fa-solid fa-flag"></i>
+                Prioridad
+              </label>
+              <select id="prioridad" name="prioridad">
+                <option value="baja">Baja - Consulta general</option>
+                <option value="media" selected>Media - Necesito ayuda</option>
+                <option value="alta">Alta - Problema importante</option>
+                <option value="urgente">Urgente - Requiere atención inmediata</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="id_orden">
+                <i class="fa-solid fa-shopping-bag"></i>
+                Pedido Relacionado (Opcional)
+              </label>
+              <select id="id_orden" name="id_orden">
+                <option value="">Ninguno</option>
+                <% pedidos.forEach(pedido => { %>
+                  <option value="<%= pedido.id_orden %>">
+                    Pedido #<%= pedido.id_orden %> - $<%= pedido.monto_total.toLocaleString('es-CL') %>
+                    (<%= new Date(pedido.fecha_creacion).toLocaleDateString('es-CL') %>)
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <i class="fa-solid fa-info-circle"></i>
+            <div>
+              <strong>Tiempo de respuesta:</strong>
+              <p>Nuestro equipo responde solicitudes en menos de 24 horas hábiles. Las solicitudes urgentes se priorizan.</p>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <a href="/ayuda/mis-solicitudes" class="btn-secondary">
+              <i class="fa-solid fa-list"></i>
+              Ver Mis Solicitudes
+            </a>
+            <button type="submit" class="btn-primary">
+              <i class="fa-solid fa-paper-plane"></i>
+              Enviar Solicitud
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Sidebar con FAQ -->
+      <div class="help-sidebar">
+        <div class="faq-card">
+          <h3>
+            <i class="fa-solid fa-circle-question"></i>
+            Preguntas Frecuentes
+          </h3>
+
+          <div class="faq-item">
+            <h4>¿Cuánto tarda el envío?</h4>
+            <p>Los envíos se realizan en 2-5 días hábiles dependiendo de tu ubicación.</p>
+          </div>
+
+          <div class="faq-item">
+            <h4>¿Puedo cambiar mi pedido?</h4>
+            <p>Puedes modificar tu pedido hasta 2 horas después de realizarlo contactándonos.</p>
+          </div>
+
+          <div class="faq-item">
+            <h4>¿Ofrecen devoluciones?</h4>
+            <p>Sí, aceptamos devoluciones dentro de los 30 días posteriores a la compra.</p>
+          </div>
+
+          <div class="faq-item">
+            <h4>¿Cómo rastreo mi pedido?</h4>
+            <p>Puedes ver el estado de tu pedido en la sección "Mis Pedidos" de tu perfil.</p>
+          </div>
+        </div>
+
+        <div class="contact-card">
+          <h3>
+            <i class="fa-solid fa-phone"></i>
+            Otros Canales
+          </h3>
+          <div class="contact-methods">
+            <div class="contact-method">
+              <i class="fa-solid fa-envelope"></i>
+              <div>
+                <strong>Email</strong>
+                <p>XtreeEnergy@gmail.com</p>
+              </div>
+            </div>
+            <div class="contact-method">
+              <i class="fa-solid fa-phone"></i>
+              <div>
+                <strong>Teléfono</strong>
+                <p>+56 9 0000 0000</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    // Contador de caracteres
+    const mensajeTextarea = document.getElementById('mensaje');
+    const asuntoInput = document.getElementById('asunto');
+
+    function updateCharCount(element, minChars) {
+      const hint = element.nextElementSibling;
+      const currentLength = element.value.length;
+      
+      if (currentLength < minChars) {
+        hint.textContent = `Faltan ${minChars - currentLength} caracteres`;
+        hint.style.color = '#ff6666';
+      } else {
+        hint.textContent = `${currentLength} caracteres`;
+        hint.style.color = '#00ff00';
+      }
+    }
+
+    mensajeTextarea.addEventListener('input', () => updateCharCount(mensajeTextarea, 20));
+    asuntoInput.addEventListener('input', () => updateCharCount(asuntoInput, 5));
+  </script>
+</body>
+</html>

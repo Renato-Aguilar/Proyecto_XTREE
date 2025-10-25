@@ -1,0 +1,120 @@
+<!-- Views/auth/edit-profile.ejs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('../partials/head', { cssFile: 'auth.css' }) %>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  <%- include('../partials/header') %>
+
+  <main class="auth-container">
+    <div class="auth-box">
+      <div class="auth-header">
+        <h1>Editar Perfil</h1>
+        <p>Actualiza tu información personal</p>
+      </div>
+
+      <!-- Mensajes Flash -->
+      <% if (error && error.length > 0) { %>
+        <div class="alert alert-error">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <%= error[0] %>
+        </div>
+      <% } %>
+
+      <% if (success && success.length > 0) { %>
+        <div class="alert alert-success">
+          <i class="fa-solid fa-circle-check"></i>
+          <%= success[0] %>
+        </div>
+      <% } %>
+
+      <form action="/profile/edit" method="POST" class="auth-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nombre">
+              <i class="fa-solid fa-user"></i>
+              Nombre
+            </label>
+            <input 
+              type="text" 
+              id="nombre" 
+              name="nombre" 
+              value="<%= user.nombre %>"
+              required
+              minlength="2"
+              autocomplete="given-name"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="apellido">
+              <i class="fa-solid fa-user"></i>
+              Apellido
+            </label>
+            <input 
+              type="text" 
+              id="apellido" 
+              name="apellido" 
+              value="<%= user.apellido %>"
+              required
+              minlength="2"
+              autocomplete="family-name"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">
+            <i class="fa-solid fa-envelope"></i>
+            Email (No editable)
+          </label>
+          <input 
+            type="email" 
+            id="email" 
+            value="<%= user.email %>"
+            disabled
+            title="Para cambiar tu email, contacta con soporte"
+          >
+          <small class="form-hint">
+            <i class="fa-solid fa-info-circle"></i>
+            El email no puede ser cambiado. Si necesitas cambiar tu email, contacta con soporte.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="direccion">
+            <i class="fa-solid fa-location-dot"></i>
+            Dirección Completa
+          </label>
+          <input 
+            type="text" 
+            id="direccion" 
+            name="direccion" 
+            value="<%= user.direccion %>"
+            required
+            minlength="10"
+            placeholder="Calle Principal 123, Comuna, Ciudad"
+            autocomplete="street-address"
+          >
+          <small class="form-hint">Incluye calle, número, comuna y ciudad</small>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-top: 30px;">
+          <a href="/profile" class="btn-secondary" style="flex: 1; text-align: center; text-decoration: none; padding: 15px;">
+            <i class="fa-solid fa-arrow-left"></i>
+            Cancelar
+          </a>
+          <button type="submit" class="btn-primary" style="flex: 1;">
+            <i class="fa-solid fa-save"></i>
+            Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

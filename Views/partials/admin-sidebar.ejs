@@ -1,0 +1,58 @@
+<!-- Views/partials/admin-sidebar.ejs -->
+<aside class="admin-sidebar">
+  <div class="sidebar-header">
+    <i class="fa-solid fa-shield-halved"></i>
+    <h2>Panel Admin</h2>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="/admin/dashboard" class="sidebar-link <%= activePage === 'admin' && !locals.subPage ? 'active' : '' %>">
+      <i class="fa-solid fa-chart-line"></i>
+      <span>Dashboard</span>
+    </a>
+
+    <a href="/admin/productos" class="sidebar-link">
+      <i class="fa-solid fa-box"></i>
+      <span>Productos</span>
+    </a>
+
+    <a href="/admin/pedidos" class="sidebar-link">
+      <i class="fa-solid fa-shopping-bag"></i>
+      <span>Pedidos</span>
+    </a>
+
+    <a href="/admin/ayuda" class="sidebar-link">
+      <i class="fa-solid fa-headset"></i>
+      <span>Centro de Ayuda</span>
+    </a>
+
+    <a href="/admin/usuarios" class="sidebar-link">
+      <i class="fa-solid fa-users"></i>
+      <span>Usuarios</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+
+    <a href="/" class="sidebar-link">
+      <i class="fa-solid fa-globe"></i>
+      <span>Ver Sitio Web</span>
+    </a>
+
+    <form action="/logout" method="POST" style="margin: 0;">
+      <button type="submit" class="sidebar-link logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Cerrar Sesión</span>
+      </button>
+    </form>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="admin-info">
+      <i class="fa-solid fa-user-shield"></i>
+      <div>
+        <strong><%= user.nombre %></strong>
+        <small><%= user.rol === 'superadmin' ? 'Super Admin' : 'Administrador' %></small>
+      </div>
+    </div>
+  </div>
+</aside>

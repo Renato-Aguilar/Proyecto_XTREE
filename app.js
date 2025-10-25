@@ -52,11 +52,15 @@ app.use(express.static('public'));
 const pageRoutes = require('./Routes/pageRoutes');
 const authRoutes = require('./Routes/authRoutes');
 const cartRoutes = require('./Routes/cartRoutes');
+const adminRoutes = require('./Routes/adminRoutes');
+const helpRoutes = require('./Routes/helpRoutes'); // NUEVA RUTA
 
 // Montar rutas
 app.use('/', pageRoutes);
 app.use('/', authRoutes);
 app.use('/', cartRoutes);
+app.use('/admin', adminRoutes);
+app.use('/ayuda', helpRoutes); // RUTAS DE AYUDA CLIENTE
 
 // ----------------------
 // Servidor
@@ -64,4 +68,5 @@ app.use('/', cartRoutes);
 
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`🔐 Panel Admin disponible en http://localhost:${PORT}/admin/dashboard`);
 });

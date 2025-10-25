@@ -1,73 +1,95 @@
 const pool = require('../config/db');
 
-// Middleware: Protege rutas que requieren autenticación
-// Si el usuario NO está logueado, redirige a /login
+// ✅ Middleware: Protege rutas que requieren autenticación
 const isAuthenticated = (req, res, next) => {
-  // Verificar si existe sesión activa con userId
   if (req.session && req.session.userId) {
-    return next(); // Usuario autenticado, continuar
+    return next();
   }
   
-  // Guardar URL a la que intentaba acceder para redirigir después del login
   req.session.returnTo = req.originalUrl;
   req.flash('error', 'Debes iniciar sesión para acceder a esta página');
   res.redirect('/login');
 };
 
-// Middleware: Protege rutas que solo invitados pueden ver (login, register)
-// Si el usuario YA está logueado, redirige al inicio
+// ✅ Middleware: Protege rutas que solo invitados pueden ver
 const isGuest = (req, res, next) => {
-  // Si NO hay sesión o NO hay userId, es invitado
   if (!req.session || !req.session.userId) {
-    return next(); // Usuario invitado, continuar
+    return next();
   }
   
-  // Usuario ya autenticado, no necesita ver login/register
   res.redirect('/');
 };
 
-// Middleware: Carga datos del usuario en TODAS las vistas (res.locals)
-// Se ejecuta en cada request antes de renderizar cualquier página
+// ✅ Middleware: Carga datos del usuario en TODAS las vistas
 const loadUser = async (req, res, next) => {
-  // Cargar mensajes flash (success/error) para mostrar en las vistas
+  // Inicializar variables de flash
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
   
-  // Si hay usuario autenticado, cargar sus datos
+  // Inicializar usuario como null por defecto
+  res.locals.user = null;
+  res.locals.cartCount = 0;
+  
   if (req.session && req.session.userId) {
-    // Pasar datos del usuario a las vistas vía res.locals
-    res.locals.user = {
-      id: req.session.userId,
-      nombre: req.session.userName || '',
-      apellido: req.session.userLastName || '',
-      email: req.session.userEmail || '',
-      username: req.session.userUsername || '',
-      direccion: req.session.userAddress || ''
-    };
-
-    // Consultar BD para obtener el total de packs en el carrito
-    // Esto actualiza el contador del navbar en tiempo real
     try {
-      const [count] = await pool.query(
-        'SELECT SUM(cantidad) as total FROM carritos WHERE id_usuario = ?',
+      // ✅ Consultar usuario con su rol
+      const [users] = await pool.query(
+        'SELECT id_usuario, nombre_usuario, nombre, apellido, email, direccion, rol FROM usuarios WHERE id_usuario = ?',
         [req.session.userId]
       );
-      res.locals.cartCount = count[0].total || 0;
+
+      if (users.length > 0) {
+        const userData = users[0];
+        
+        // ✅ IMPORTANTE: Pasar TODOS los datos que necesita header.ejs
+        res.locals.user = {
+          id: userData.id_usuario,
+          nombre: userData.nombre,
+          apellido: userData.apellido,
+          email: userData.email,
+          username: userData.nombre_usuario,
+          nombre_usuario: userData.nombre_usuario,
+          direccion: userData.direccion,
+          rol: userData.rol
+        };
+
+        // Guardar también en sesión para middleware admin
+        req.session.userRole = userData.rol;
+
+        // ✅ Consultar contador del carrito
+        try {
+          const [count] = await pool.query(
+            'SELECT SUM(cantidad) as total FROM carritos WHERE id_usuario = ?',
+            [req.session.userId]
+          );
+          res.locals.cartCount = count[0].total || 0;
+        } catch (error) {
+          console.error('Error al contar carrito:', error);
+          res.locals.cartCount = 0;
+        }
+      } else {
+        // Usuario no encontrado en BD, limpiar sesión
+        console.warn(`⚠️ Usuario ${req.session.userId} no encontrado en BD`);
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('Error al destruir sesión:', err);
+          }
+        });
+        res.locals.user = null;
+        res.locals.cartCount = 0;
+      }
     } catch (error) {
-      console.error('Error al cargar contador del carrito:', error);
+      console.error('Error al cargar usuario en loadUser:', error);
+      res.locals.user = null;
       res.locals.cartCount = 0;
     }
-  } else {
-    // Usuario no autenticado, valores por defecto
-    res.locals.user = null;
-    res.locals.cartCount = 0;
   }
   
-  next(); // Continuar con la siguiente función
+  next();
 };
 
 module.exports = {
-  isAuthenticated,  // Usar en rutas protegidas: router.get('/carrito', isAuthenticated, ...)
-  isGuest,          // Usar en login/register: router.get('/login', isGuest, ...)
-  loadUser          // Usar globalmente en app.js: app.use(loadUser)
+  isAuthenticated,
+  isGuest,
+  loadUser
 };
