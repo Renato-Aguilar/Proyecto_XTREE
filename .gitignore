@@ -2,6 +2,9 @@
 # SISTEMA OPERATIVO
 # --------------------------------------
 
+
+node_modules/
+
 # macOS
 .DS_Store
 

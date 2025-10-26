@@ -446,3 +446,158 @@
     font-size: 0.8rem;
   }
 }
+/* Agregar esto al final de public/css/auth.css */
+
+/* ==================== EDIT PROFILE STYLES ==================== */
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #cccccc !important;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+}
+
+/* ==================== PASSWORD STRENGTH INDICATOR ==================== */
+
+.password-strength {
+  margin: 10px 0 15px 0;
+}
+
+.strength-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.strength-fill {
+  height: 100%;
+  width: 0%;
+  transition: all 0.3s ease;
+  background: #00ff00;
+}
+
+.strength-text {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.strength-text span {
+  font-weight: 600;
+  color: #00ff00;
+}
+
+/* ==================== PASSWORD REQUIREMENTS ==================== */
+
+.password-requirements {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  border-radius: 10px;
+  padding: 15px;
+  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.requirement {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.requirement i {
+  font-size: 1rem;
+  color: #ff6666;
+  transition: all 0.3s ease;
+  width: 18px;
+}
+
+.requirement.met {
+  color: rgba(0, 255, 0, 0.9);
+}
+
+.requirement.met i {
+  color: #00ff00;
+  animation: checkBounce 0.4s ease-out;
+}
+
+@keyframes checkBounce {
+  0% { 
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% { 
+    transform: scale(1.2);
+  }
+  100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ==================== FORM HINTS ==================== */
+
+.form-hint {
+  display: block;
+  color: #888;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ==================== MATCH HINT ==================== */
+
+#matchHint {
+  display: block !important;
+  color: #888 !important;
+  font-size: 0.85rem !important;
+  margin-top: 8px !important;
+}
+
+/* ==================== SECURITY CARD ==================== */
+
+.security-card p {
+  color: #cccccc;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+@media (max-width: 768px) {
+  .password-requirements {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .requirement {
+    font-size: 0.8rem;
+  }
+
+  .requirement i {
+    width: 16px;
+  }
+}

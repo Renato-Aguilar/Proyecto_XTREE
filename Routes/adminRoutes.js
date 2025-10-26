@@ -3,8 +3,8 @@ const express = require('express');
 const router = express.Router();
 
 // ✅ IMPORTAR CONTROLADORES
-const adminController = require('../controllers/adminController');
-const helpController = require('../controllers/helpController');
+const adminController = require('../Controllers/adminController');
+const helpController = require('../Controllers/helpController');
 
 // ✅ IMPORTAR MIDDLEWARE
 const { isAdmin, isSuperAdmin } = require('../middleware/adminMiddleware');

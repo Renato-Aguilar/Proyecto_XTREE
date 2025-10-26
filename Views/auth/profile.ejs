@@ -88,6 +88,8 @@
 
       <!-- Panel derecho: Información y acciones -->
       <div class="profile-details">
+
+        <!-- REEMPLAZADA: Sección de Información Personal -->
         <div class="detail-card">
           <h2>
             <i class="fa-solid fa-user"></i>
@@ -109,10 +111,11 @@
             <span class="detail-label">Dirección:</span>
             <span class="detail-value"><%= user.direccion || 'No especificada' %></span>
           </div>
-          <button class="btn-edit" onclick="alert('Funcionalidad de edición próximamente')">
+          <!-- BOTÓN CORREGIDO -->
+          <a href="/profile/edit" class="btn-edit">
             <i class="fa-solid fa-pen"></i>
             Editar Perfil
-          </button>
+          </a>
         </div>
 
         <div class="detail-card">
@@ -136,16 +139,18 @@
           </div>
         </div>
 
+        <!-- REEMPLAZADA: Sección de Seguridad -->
         <div class="detail-card security-card">
           <h2>
             <i class="fa-solid fa-shield-halved"></i>
             Seguridad
           </h2>
           <p>Mantén tu cuenta segura actualizando tu contraseña regularmente.</p>
-          <button class="btn-security" onclick="alert('Cambio de contraseña próximamente')">
+          <!-- BOTÓN CORREGIDO -->
+          <a href="/profile/change-password" class="btn-security">
             <i class="fa-solid fa-key"></i>
             Cambiar Contraseña
-          </button>
+          </a>
         </div>
       </div>
     </div>

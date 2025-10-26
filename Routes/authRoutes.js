@@ -10,16 +10,32 @@ const {
   getProfile
 } = require('../Controllers/authController');
 
-// Rutas de autenticación
-router.get('/register', isGuest, getRegister); // Muestra formulario de registro
-router.post('/register', isGuest, postRegister); // Procesa registro de usuario
+// Importar nuevo controller de perfil
+const {
+  getEditProfile,
+  postEditProfile,
+  getChangePassword,
+  postChangePassword
+} = require('../Controllers/profileController');
 
-router.get('/login', isGuest, getLogin); // Muestra formulario de login
-router.post('/login', isGuest, postLogin); // Procesa inicio de sesión
+// ==================== AUTENTICACIÓN ====================
+router.get('/register', isGuest, getRegister);
+router.post('/register', isGuest, postRegister);
 
-router.post('/logout', isAuthenticated, postLogout); // Cierra sesión del usuario
+router.get('/login', isGuest, getLogin);
+router.post('/login', isGuest, postLogin);
 
-// Ruta de perfil protegida
-router.get('/profile', isAuthenticated, getProfile); // Muestra perfil del usuario autenticado
+router.post('/logout', isAuthenticated, postLogout);
+
+// ==================== PERFIL ====================
+router.get('/profile', isAuthenticated, getProfile);
+
+// ==================== EDITAR PERFIL ====================
+router.get('/profile/edit', isAuthenticated, getEditProfile);
+router.post('/profile/edit', isAuthenticated, postEditProfile);
+
+// ==================== CAMBIAR CONTRASEÑA ====================
+router.get('/profile/change-password', isAuthenticated, getChangePassword);
+router.post('/profile/change-password', isAuthenticated, postChangePassword);
 
 module.exports = router;
