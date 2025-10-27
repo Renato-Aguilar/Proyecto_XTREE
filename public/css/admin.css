@@ -1542,3 +1542,71 @@ textarea::placeholder {
     grid-template-columns: 1fr;
   }
 }
+/* ✅ ESTILOS PARA BOTONES DESHABILITADOS */
+.btn-action:disabled {
+  background: rgba(107, 114, 128, 0.1) !important;
+  color: #9ca3af !important;
+  border-color: rgba(107, 114, 128, 0.3) !important;
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+  pointer-events: none !important;
+}
+
+.btn-action:disabled:hover {
+  background: rgba(107, 114, 128, 0.1) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ✅ ESTILOS PARA SELECT DESHABILITADO */
+select:disabled,
+.form-group select:disabled,
+.product-form select:disabled {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(107, 114, 128, 0.3) !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+select:disabled option {
+  background: #1a1a1a !important;
+  color: #9ca3af !important;
+}
+
+/* ✅ ANIMACIÓN DE TOOLTIP PARA BOTONES DESHABILITADOS */
+.btn-action[disabled][title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 1000;
+  border: 1px solid rgba(107, 114, 128, 0.5);
+}
+
+.btn-action[disabled][title]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 115%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+}
+
+/* ✅ POSICIÓN RELATIVA PARA LOS TOOLTIPS */
+.actions-cell {
+  position: relative;
+}
+
+.actions-cell .btn-action {
+  position: relative;
+}

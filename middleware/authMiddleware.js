@@ -53,8 +53,10 @@ const loadUser = async (req, res, next) => {
           rol: userData.rol
         };
 
-        // Guardar también en sesión para middleware admin
+        // Guardar rol en la sesión para middleware admin
         req.session.userRole = userData.rol;
+        req.session.userName = userData.nombre;
+        req.session.userLastName = userData.apellido;
 
         // ✅ Consultar contador del carrito
         try {

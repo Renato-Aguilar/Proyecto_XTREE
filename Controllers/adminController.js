@@ -532,20 +532,41 @@ const updateUsuario = async (req, res) => {
       return res.redirect('/admin/usuarios');
     }
 
+    const usuarioActual = usuarios[0];
+
+    // ✅ RESTRICCIÓN 1: No permitir cambio de rol a no-superadmin
     if (rol && req.session.userRole !== 'superadmin') {
       req.flash('error', 'Solo superadministradores pueden cambiar roles');
       return res.redirect('/admin/usuarios');
     }
 
-    if (rol === 'cliente' && parseInt(id_usuario) === req.session.userId) {
-      req.flash('error', 'No puedes cambiar tu propio rol a cliente');
+    // ✅ RESTRICCIÓN 2: No permitir que nadie se cambie a sí mismo a otro rol
+    if (rol && parseInt(id_usuario) === req.session.userId) {
+      if (rol !== usuarioActual.rol) {
+        req.flash('error', 'No puedes cambiar tu propio rol');
+        return res.redirect('/admin/usuarios');
+      }
+    }
+
+    // ✅ RESTRICCIÓN 3: NO PERMITIR CREAR NI MODIFICAR SUPERADMINS NUNCA
+    if (rol === 'superadmin') {
+      req.flash('error', 'El rol de superadmin no se puede asignar desde la interfaz. Contacta con el administrador del sistema');
       return res.redirect('/admin/usuarios');
     }
 
-    const rolesValidos = ['cliente', 'admin', 'superadmin'];
-    if (rol && !rolesValidos.includes(rol)) {
-      req.flash('error', 'Rol inválido');
+    // ✅ RESTRICCIÓN 4: No permitir degradar a un superadmin a otro rol
+    if (usuarioActual.rol === 'superadmin' && rol && rol !== 'superadmin') {
+      req.flash('error', 'No se puede cambiar el rol de un superadmin');
       return res.redirect('/admin/usuarios');
+    }
+
+    // ✅ RESTRICCIÓN 5: Solo permitir cambiar entre 'cliente' y 'admin'
+    if (rol) {
+      const rolesPermitidos = ['cliente', 'admin'];
+      if (!rolesPermitidos.includes(rol)) {
+        req.flash('error', 'Rol no permitido. Solo se puede asignar "cliente" o "admin"');
+        return res.redirect('/admin/usuarios');
+      }
     }
 
     const [emailExistente] = await pool.query(
@@ -561,7 +582,8 @@ const updateUsuario = async (req, res) => {
     let query = 'UPDATE usuarios SET nombre = ?, apellido = ?, email = ?, direccion = ?';
     let params = [nombre.trim(), apellido.trim(), email.trim(), direccion ? direccion.trim() : ''];
 
-    if (rol && req.session.userRole === 'superadmin') {
+    // Solo cambiar rol si es superadmin y el rol es diferente
+    if (rol && req.session.userRole === 'superadmin' && rol !== usuarioActual.rol) {
       query += ', rol = ?';
       params.push(rol);
     }

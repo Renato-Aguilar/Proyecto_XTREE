@@ -81,7 +81,7 @@ const updateUser = async (id, nombreUsuario, nombre, apellido, direccion) => {
       'UPDATE usuarios SET nombre_usuario = ?, nombre = ?, apellido = ?, direccion = ? WHERE id_usuario = ?',
       [nombreUsuario, nombre, apellido, direccion, id]
     );
-    return result.affectedRows > 0; // true si se actualizó algo
+    return result.affectedRows > 0;
   } catch (error) {
     console.error('Error al actualizar usuario:', error);
     throw error;

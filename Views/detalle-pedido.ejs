@@ -58,6 +58,30 @@
             </span>
           </div>
 
+          <!-- ✅ MOSTRAR SI HAY PROBLEMA EN EL PEDIDO -->
+          <% if (order.tiene_problema) { %>
+            <div class="info-row problema-row">
+              <span class="info-label">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+                Estado del Problema:
+              </span>
+              <span class="info-value problema">Con Problema</span>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">Descripción del Problema:</span>
+              <span class="info-value"><%= order.descripcion_problema %></span>
+            </div>
+          <% } else { %>
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fa-solid fa-check-circle"></i>
+                Estado del Pedido:
+              </span>
+              <span class="info-value success">Sin Problemas</span>
+            </div>
+          <% } %>
+
           <div class="info-row total-row">
             <span class="info-label">Total Pagado:</span>
             <span class="info-value total">$<%= order.monto_total.toLocaleString('es-CL') %></span>
@@ -151,7 +175,12 @@
             <i class="fa-solid fa-circle-question"></i>
             ¿Necesitas Ayuda?
           </h3>
-          <p>Si tienes algún problema con tu pedido, contáctanos:</p>
+          <% if (order.tiene_problema) { %>
+            <p>Tu pedido ha sido reportado con un problema. Nuestro equipo está trabajando para resolverlo.</p>
+            <p>Puedes contactarnos para más información:</p>
+          <% } else { %>
+            <p>Si tienes algún problema con tu pedido, contáctanos:</p>
+          <% } %>
           <div class="contact-info">
             <p>
               <i class="fa-solid fa-envelope"></i>
@@ -162,6 +191,10 @@
               +56 9 0000 0000
             </p>
           </div>
+          <a href="/ayuda/nueva" class="btn-help">
+            <i class="fa-solid fa-headset"></i>
+            Crear Solicitud de Ayuda
+          </a>
         </div>
       </div>
     </div>

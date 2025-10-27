@@ -13,24 +13,25 @@ const {
 } = require('../Controllers/checkoutController');
 const { getMisPedidos, getDetallePedido } = require('../Controllers/ordersController');
 
-// Rutas públicas
+// ==================== RUTAS PÚBLICAS ====================
 router.get('/', getIndex);
 router.get('/nosotros', getNosotros);
 router.get('/productos', getProductos);
 router.get('/comprar', getComprar);
 router.get('/comprar/:id', getProductoComprar);
 
-// Rutas protegidas - Checkout y Pedidos
+// ==================== RUTAS PROTEGIDAS - CHECKOUT Y PEDIDOS ====================
 router.get('/checkout', isAuthenticated, getCheckout);
 
-// Rutas de PayPal
+// ==================== RUTAS DE PAYPAL ====================
 router.post('/api/paypal/create-order', isAuthenticated, createPayPalOrder);
 router.post('/api/paypal/capture-order', isAuthenticated, capturePayPalOrder);
 router.get('/checkout/success', isAuthenticated, getCheckoutSuccess);
 router.get('/checkout/cancel', isAuthenticated, getCheckoutCancel);
 
-// Pedidos
+// ==================== RUTAS DE PEDIDOS ====================
+// ✅ AGREGADA PROTECCIÓN A DETALLES DE PEDIDO CON isAuthenticated
 router.get('/mis-pedidos', isAuthenticated, getMisPedidos);
 router.get('/pedidos/:id', isAuthenticated, getDetallePedido);
 
-module.exports = router;
+module.exports = router;  

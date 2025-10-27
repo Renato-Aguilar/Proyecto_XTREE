@@ -112,37 +112,37 @@ const postLogin = async (req, res) => {
   try {
     const { email, contrasena } = req.body;
 
-    // Validar que ambos campos estén presentes
     if (!email || !contrasena) {
       req.flash('error', 'Email y contraseña son requeridos');
       return res.redirect('/login');
     }
 
-    // Buscar usuario por email
     const user = await findUserByEmail(email);
     if (!user) {
       req.flash('error', 'Credenciales incorrectas');
       return res.redirect('/login');
     }
 
-    // Verificar contraseña (compara hash)
     const isValidPassword = await verifyPassword(contrasena, user.contrasena);
     if (!isValidPassword) {
       req.flash('error', 'Credenciales incorrectas');
       return res.redirect('/login');
     }
-
-    // Crear sesión guardando datos del usuario
     req.session.userId = user.id_usuario;
     req.session.userName = user.nombre;
     req.session.userLastName = user.apellido;
     req.session.userEmail = user.email;
     req.session.userUsername = user.nombre_usuario;
     req.session.userAddress = user.direccion;
+    req.session.userRole = user.rol;
 
     req.flash('success', `¡Bienvenido, ${user.nombre}!`);
     
-    // Redirigir a la página que intentaba acceder o al inicio
+    // Redirigir según el rol
+    if (user.rol === 'admin' || user.rol === 'superadmin') {
+      return res.redirect('/admin/dashboard');
+    }
+    
     const returnTo = req.session.returnTo || '/';
     delete req.session.returnTo;
     res.redirect(returnTo);

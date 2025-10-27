@@ -75,10 +75,19 @@
                     <td class="text-center"><%= usuario.total_pedidos %></td>
                     <td class="text-green font-bold">$<%= usuario.gasto_total.toLocaleString('es-CL') %></td>
                     <td class="actions-cell">
+                      <!-- ✅ BOTÓN DESHABILITADO SI ES SUPERADMIN O SI ERES UN ADMIN Y EL USUARIO ES SUPERADMIN O TÚ MISMO -->
+                      <% 
+                        const esSuperAdmin = usuario.rol === 'superadmin';
+                        const esUsuarioActual = usuario.id_usuario === user.id;
+                        const puedeEditar = isSuperAdmin && !esSuperAdmin;
+                        const razonDeshabilitado = esSuperAdmin ? 'No se puede modificar a un superadmin' : 
+                                                  esUsuarioActual ? 'No puedes editarte a ti mismo' : '';
+                      %>
                       <button 
                         onclick="editarUsuario(<%= usuario.id_usuario %>, '<%= usuario.nombre %>', '<%= usuario.apellido %>', '<%= usuario.email %>', '<%= usuario.rol %>')" 
                         class="btn-action"
-                        title="Editar Usuario">
+                        <%= !puedeEditar ? 'disabled' : '' %>
+                        title="<%= puedeEditar ? 'Editar Usuario' : razonDeshabilitado %>">
                         <i class="fa-solid fa-pen"></i>
                       </button>
                     </td>
@@ -132,17 +141,18 @@
             <input type="text" name="direccion" id="edit_direccion" placeholder="Actualizar dirección (opcional)">
           </div>
 
+          <!-- ✅ CAMPO DE ROL CON VALIDACIONES EN FRONTEND -->
           <% if (isSuperAdmin) { %>
             <div class="form-group">
               <label>Rol</label>
               <select name="rol" id="edit_rol">
                 <option value="cliente">Cliente</option>
                 <option value="admin">Administrador</option>
-                <option value="superadmin">Super Administrador</option>
+                <!-- ✅ NO MOSTRAR LA OPCIÓN DE SUPERADMIN EN EL FRONTEND -->
               </select>
               <small class="form-hint">
                 <i class="fa-solid fa-warning"></i>
-                Cambiar roles es una acción sensible. Úsala con precaución.
+                Solo puedes cambiar entre Cliente y Administrador. El rol de Superadmin no se puede asignar desde aquí.
               </small>
             </div>
           <% } %>
@@ -169,7 +179,19 @@
       document.getElementById('edit_email').value = email;
       
       <% if (isSuperAdmin) { %>
-        document.getElementById('edit_rol').value = rol;
+        // ✅ SI EL USUARIO ES SUPERADMIN O ES TÚ MISMO, NO PERMITIR CAMBIO DE ROL
+        const selectRol = document.getElementById('edit_rol');
+        const esSuperAdmin = rol === 'superadmin';
+        const esUsuarioActual = id === <%= user.id %>;
+        
+        if (esSuperAdmin || esUsuarioActual) {
+          selectRol.disabled = true;
+          selectRol.value = rol;
+          selectRol.title = esSuperAdmin ? 'No se puede cambiar el rol de un superadmin' : 'No puedes cambiar tu propio rol';
+        } else {
+          selectRol.disabled = false;
+          selectRol.value = rol;
+        }
       <% } %>
       
       modal.style.display = 'flex';
@@ -185,6 +207,17 @@
         cerrarModal();
       }
     }
+
+    // ✅ VALIDACIÓN EN CLIENTE ANTES DE ENVIAR
+    document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
+      const selectRol = document.getElementById('edit_rol');
+      
+      // Si está deshabilitado el select, no enviar cambio de rol
+      if (selectRol && selectRol.disabled) {
+        // Eliminar el atributo name para que no se envíe
+        selectRol.removeAttribute('name');
+      }
+    });
   </script>
 <script src="/js/admin-modal.js"></script>
 </body>

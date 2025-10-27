@@ -11,7 +11,7 @@ const isAdmin = async (req, res, next) => {
 
     // Consultar rol del usuario en la BD
     const [users] = await pool.query(
-      'SELECT id_usuario, rol FROM usuarios WHERE id_usuario = ?',
+      'SELECT id_usuario, rol, nombre, apellido FROM usuarios WHERE id_usuario = ?',
       [req.session.userId]
     );
 
@@ -34,10 +34,12 @@ const isAdmin = async (req, res, next) => {
     // Guardar rol en la sesión para uso posterior
     req.session.userRole = userRole;
     
-    // Pasar información del usuario a las vistas
+    // ✅ IMPORTANTE: Pasar información del usuario al sidebar
     res.locals.user = {
       id: users[0].id_usuario,
-      rol: userRole
+      rol: userRole,
+      nombre: users[0].nombre,
+      apellido: users[0].apellido
     };
 
     next();
