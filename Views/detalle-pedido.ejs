@@ -65,7 +65,7 @@
       <div class="print-address">
         <div class="print-address-label">DIRECCIÓN DE ENVÍO:</div>
         <div class="print-address-content">
-          <%= isAdmin && clientData ? clientData.direccion : order.direccion_envio || 'No especificada' %>
+          <%= isAdmin && clientData ? clientData.direccion : shippingAddress || 'No especificada' %>
         </div>
       </div>
 

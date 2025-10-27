@@ -84,8 +84,6 @@ const getMisPedidos = async (req, res) => {
   }
 };
 
-// Ver detalle de un pedido específico
-// ✅ ARREGLADO: Permitir que admins vean cualquier pedido
 const getDetallePedido = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -106,12 +104,18 @@ const getDetallePedido = async (req, res) => {
     const order = orderCheck[0];
 
     // ✅ PASO 2: Verificar permisos
-    // Si es cliente, debe ser su propio pedido
-    // Si es admin/superadmin, puede ver cualquier pedido
     if (userRole !== 'admin' && userRole !== 'superadmin' && order.id_usuario !== userId) {
       req.flash('error', 'No tienes permiso para ver este pedido');
       return res.redirect('/mis-pedidos');
     }
+
+    // ✅ NUEVO: Obtener dirección de envío del usuario
+    const [userData] = await pool.query(
+      'SELECT direccion FROM usuarios WHERE id_usuario = ?',
+      [order.id_usuario]
+    );
+    
+    const shippingAddress = userData.length > 0 ? userData[0].direccion : 'No especificada';
 
     // ✅ PASO 3: Obtener detalles del pedido
     const [details] = await pool.query(`
@@ -139,11 +143,11 @@ const getDetallePedido = async (req, res) => {
     // ✅ PASO 5: Si es admin, obtener datos del usuario también
     let clientData = null;
     if (userRole === 'admin' || userRole === 'superadmin') {
-      const [userData] = await pool.query(
+      const [clientUserData] = await pool.query(
         'SELECT id_usuario, nombre, apellido, email, direccion FROM usuarios WHERE id_usuario = ?',
         [order.id_usuario]
       );
-      clientData = userData[0] || null;
+      clientData = clientUserData[0] || null;
     }
 
     res.render('detalle-pedido', {
@@ -153,6 +157,7 @@ const getDetallePedido = async (req, res) => {
       details,
       tracking,
       clientData,
+      shippingAddress,  // ✅ AGREGAR ESTA LÍNEA
       isAdmin: userRole === 'admin' || userRole === 'superadmin',
       getIconForStatus
     });
