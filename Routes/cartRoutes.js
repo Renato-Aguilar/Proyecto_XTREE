@@ -10,11 +10,19 @@ const {
   getCartCount
 } = require('../Controllers/cartController');
 
-router.get('/carrito', isAuthenticated, getCarrito); // Muestra el carrito de compras
-router.post('/carrito/agregar', isAuthenticated, addToCart); // Agrega producto al carrito
-router.post('/carrito/actualizar', isAuthenticated, updateCartQuantity); // Actualiza cantidad de producto
-router.post('/carrito/eliminar', isAuthenticated, removeFromCart); // Elimina producto del carrito
-router.post('/carrito/limpiar', isAuthenticated, clearCart); // Vacía todo el carrito
-router.get('/carrito/count', isAuthenticated, getCartCount); // Obtiene número de items en carrito
+// ✅ Importar validaciones
+const {
+  addToCartValidation,
+  updateCartValidation,
+  removeFromCartValidation,
+  handleValidationErrors
+} = require('../middleware/validationRules');
+
+router.get('/carrito', isAuthenticated, getCarrito);
+router.post('/carrito/agregar', isAuthenticated, addToCartValidation, handleValidationErrors, addToCart);
+router.post('/carrito/actualizar', isAuthenticated, updateCartValidation, handleValidationErrors, updateCartQuantity);
+router.post('/carrito/eliminar', isAuthenticated, removeFromCartValidation, handleValidationErrors, removeFromCart);
+router.post('/carrito/limpiar', isAuthenticated, clearCart);
+router.get('/carrito/count', isAuthenticated, getCartCount);
 
 module.exports = router;

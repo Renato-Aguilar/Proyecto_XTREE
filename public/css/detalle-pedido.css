@@ -468,10 +468,38 @@
 }
 
 /* ===========================
+   OCULTAMIENTO PARA PANTALLA
+=========================== */
+
+/* IMPORTANTE: Ocultar completamente el área de impresión en pantalla */
+.print-area {
+  display: none !important;
+  visibility: hidden !important;
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ===========================
    ESTILOS PARA IMPRESIÓN
 =========================== */
 
 @media print {
+  /* Mostrar el área de impresión SOLO en impresión */
+  .print-area {
+    display: block !important;
+    visibility: visible !important;
+    position: relative !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
   /* Resetear estilos para impresión */
   * {
     background: white !important;
@@ -487,7 +515,7 @@
     color: black;
   }
 
-  /* Ocultar elementos innecesarios */
+  /* Ocultar elementos innecesarios en impresión */
   header,
   footer,
   .bg-animation,
@@ -495,6 +523,8 @@
   .actions-card,
   .help-card,
   .tracking-section,
+  .order-detail-grid,
+  .detail-section,
   .alert,
   button,
   .btn-action,
@@ -506,9 +536,7 @@
   .dropdown,
   .footer-content,
   .footer-bottom,
-  .social-links,
-  .product-image,
-  img {
+  .social-links {
     display: none !important;
   }
 
@@ -517,18 +545,6 @@
     padding: 0;
     margin: 0;
     min-height: auto;
-  }
-
-  .order-detail-grid {
-    display: block !important;
-    grid-template-columns: unset !important;
-    gap: 0 !important;
-    padding: 0;
-    margin: 0;
-  }
-
-  .detail-section {
-    display: block !important;
   }
 
   /* Área de impresión principal */
@@ -767,75 +783,33 @@
     page-break-inside: avoid;
   }
 
-  /* Eliminar animaciones */
-  *,
-  *::before,
-  *::after {
-    animation: none !important;
-  }
-
   a {
     text-decoration: none;
     color: black;
   }
 }
 
-/* Versión de pantalla */
+/* ===========================
+   VERSIÓN DE PANTALLA (No se imprime)
+=========================== */
+
 @media screen {
+  /* Asegurar que .print-area esté completamente oculto en pantalla */
   .print-area {
-    display: none;
+    display: none !important;
+    visibility: hidden !important;
   }
-}
 
-/* Responsive */
-@media (max-width: 1200px) {
+  /* Mostrar todo lo demás normalmente */
   .order-detail-grid {
-    grid-template-columns: 1fr 350px;
+    display: grid;
   }
-}
 
-@media (max-width: 992px) {
-  .order-detail-grid {
-    grid-template-columns: 1fr;
+  .detail-section {
+    display: flex;
   }
 
   .tracking-section {
-    order: -1;
-  }
-}
-
-@media (max-width: 768px) {
-  .orders-container {
-    padding: 100px 20px 60px;
-  }
-
-  .order-info-card, 
-  .order-products-card, 
-  .tracking-card, 
-  .actions-card, 
-  .help-card {
-    padding: 20px;
-    margin: 15px 0;
-  }
-
-  .product-item {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-
-  .product-image {
-    margin: 0 auto;
-  }
-
-  .product-total {
-    text-align: center;
-  }
-
-  .tracking-timeline {
-    padding-left: 30px;
-  }
-
-  .timeline-marker {
-    left: -32px;
+    display: flex;
   }
 }

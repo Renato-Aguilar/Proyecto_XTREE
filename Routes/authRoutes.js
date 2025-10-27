@@ -9,8 +9,6 @@ const {
   postLogout,
   getProfile
 } = require('../Controllers/authController');
-
-// Importar nuevo controller de perfil
 const {
   getEditProfile,
   postEditProfile,
@@ -18,24 +16,31 @@ const {
   postChangePassword
 } = require('../Controllers/profileController');
 
+// ✅ Importar validaciones
+const {
+  registerValidation,
+  loginValidation,
+  changePasswordValidation,
+  editProfileValidation,
+  handleValidationErrors
+} = require('../middleware/validationRules');
+
 // ==================== AUTENTICACIÓN ====================
 router.get('/register', isGuest, getRegister);
-router.post('/register', isGuest, postRegister);
+router.post('/register', isGuest, registerValidation, handleValidationErrors, postRegister);
 
 router.get('/login', isGuest, getLogin);
-router.post('/login', isGuest, postLogin);
+router.post('/login', isGuest, loginValidation, handleValidationErrors, postLogin);
 
 router.post('/logout', isAuthenticated, postLogout);
 
 // ==================== PERFIL ====================
 router.get('/profile', isAuthenticated, getProfile);
 
-// ==================== EDITAR PERFIL ====================
 router.get('/profile/edit', isAuthenticated, getEditProfile);
-router.post('/profile/edit', isAuthenticated, postEditProfile);
+router.post('/profile/edit', isAuthenticated, editProfileValidation, handleValidationErrors, postEditProfile);
 
-// ==================== CAMBIAR CONTRASEÑA ====================
 router.get('/profile/change-password', isAuthenticated, getChangePassword);
-router.post('/profile/change-password', isAuthenticated, postChangePassword);
+router.post('/profile/change-password', isAuthenticated, changePasswordValidation, handleValidationErrors, postChangePassword);
 
 module.exports = router;

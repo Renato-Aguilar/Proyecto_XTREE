@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
   <%- include('partials/head', { cssFile: 'detalle-pedido.css' }) %>
-
 </head>
 <body>
   <div class="bg-animation"></div>
@@ -32,24 +31,39 @@
       </div>
     <% } %>
 
-    <!-- ✅ ÁREA DE IMPRESIÓN - TEXTO PLANO OPTIMIZADO -->
+    <!-- ===========================
+         ÁREA DE IMPRESIÓN - RECIBO PROFESIONAL
+    =========================== -->
     <div class="print-area">
-      <!-- Encabezado -->
+      <!-- Encabezado Principal -->
       <div class="print-header">
-        <h1>DETALLE DEL PEDIDO</h1>
+        <h1>XTREE ENERGY</h1>
+        <p style="font-size: 12px; margin: 5px 0;">Energía Natural Sin Límites</p>
       </div>
 
-      <!-- Cliente (solo para admins) -->
+      <div class="print-separator"></div>
+
+      <!-- Información General del Recibo -->
+      <div style="text-align: center; font-size: 9px; margin-bottom: 15px;">
+        <p><strong>RECIBO DE COMPRA</strong></p>
+        <p>Fecha: <%= new Date(order.fecha_creacion).toLocaleDateString('es-CL') %></p>
+        <p>Pedido #<%= order.id_orden %></p>
+      </div>
+
+      <div class="print-separator-line"></div>
+
+      <!-- Información del Cliente (solo para admins) -->
       <% if (isAdmin && clientData) { %>
         <div class="print-client-info">
-          <p><strong>Pedido de: <%= clientData.nombre %> <%= clientData.apellido %></strong></p>
+          <h3>CLIENTE</h3>
+          <p><strong><%= clientData.nombre %> <%= clientData.apellido %></strong></p>
+          <p>Email: <%= clientData.email %></p>
         </div>
-        <div class="print-separator"></div>
       <% } %>
 
-      <!-- Dirección -->
+      <!-- Dirección de Envío -->
       <div class="print-address">
-        <div class="print-address-label">Dirección de Envío:</div>
+        <div class="print-address-label">DIRECCIÓN DE ENVÍO:</div>
         <div class="print-address-content">
           <%= isAdmin && clientData ? clientData.direccion : order.direccion_envio || 'No especificada' %>
         </div>
@@ -57,69 +71,56 @@
 
       <div class="print-separator-line"></div>
 
-      <!-- Información del Pedido -->
-      <div class="print-order-info">
-        <div class="print-info-row">
-          <span class="print-info-label">Número de Pedido:</span>
-          <span class="print-info-value">#<%= order.id_orden %></span>
-        </div>
-        <div class="print-info-row">
-          <span class="print-info-label">Fecha:</span>
-          <span class="print-info-value">
-            <%= new Date(order.fecha_creacion).toLocaleDateString('es-CL', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            }) %>
-          </span>
-        </div>
-        <% if (order.estado_actual) { %>
-          <div class="print-info-row">
-            <span class="print-info-label">Estado:</span>
-            <span class="print-info-value"><%= order.estado_actual %></span>
-          </div>
-        <% } %>
-      </div>
-
-      <div class="print-separator"></div>
-
-      <!-- Productos -->
+      <!-- Tabla de Productos -->
       <div class="print-products">
-        <h3>PRODUCTOS COMPRADOS:</h3>
+        <h3>PRODUCTOS</h3>
+        <div class="products-table-header">
+          <div class="col-item"><strong>DESCRIPCIÓN</strong></div>
+          <div class="col-qty"><strong>CANT.</strong></div>
+          <div class="col-price"><strong>PRECIO</strong></div>
+          <div class="col-total"><strong>SUBTOTAL</strong></div>
+        </div>
         <% details.forEach(item => { %>
           <div class="print-product-item">
-            <span class="print-product-name"><%= item.nombre %></span>
-            <span class="print-product-qty">(x<%= item.cantidad %>)</span>
-            <span class="print-product-price">$<%= (item.cantidad * item.precio_unitario).toLocaleString('es-CL') %></span>
+            <span class="col-item"><%= item.nombre %></span>
+            <span class="col-qty"><%= item.cantidad %></span>
+            <span class="col-price">$<%= item.precio_unitario.toLocaleString('es-CL') %></span>
+            <span class="col-total">$<%= (item.cantidad * item.precio_unitario).toLocaleString('es-CL') %></span>
           </div>
         <% }) %>
       </div>
 
       <div class="print-separator"></div>
 
-      <!-- Total -->
+      <!-- Totales -->
       <div class="print-total">
-        <div class="print-total-label">TOTAL: $<%= order.monto_total.toLocaleString('es-CL') %></div>
+        <div style="font-size: 11pt; margin: 10px 0;">
+          <span>TOTAL: </span>
+          <span style="font-weight: bold;">$<%= order.monto_total.toLocaleString('es-CL') %></span>
+        </div>
       </div>
 
-      <!-- Problema (si existe) -->
+      <!-- Problema Reportado (si existe) -->
       <% if (order.tiene_problema) { %>
         <div class="print-separator"></div>
         <div class="print-problem-section">
-          <h4>NOTA: PROBLEMA REPORTADO</h4>
+          <h4>⚠ PROBLEMA REPORTADO</h4>
           <p><%= order.descripcion_problema %></p>
         </div>
       <% } %>
 
       <div class="print-separator"></div>
 
-      <!-- Pie de página -->
+      <!-- Pie de Página -->
       <div class="print-footer">
-        <p>XTREE Energy - Energía Natural Sin Límites</p>
-        <p>XtreeEnergy@gmail.com | +56 9 0000 0000</p>
-        <p>Documento impreso: <%= new Date().toLocaleDateString('es-CL') %></p>
+        <div class="company-name">XTREE ENERGY</div>
+        <div class="contact-info">
+          <p>Email: XtreeEnergy@gmail.com</p>
+          <p>Teléfono: +56 9 0000 0000</p>
+          <p style="margin-top: 10px; font-size: 8pt;">
+            Documento generado: <%= new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+          </p>
+        </div>
       </div>
     </div>
 
@@ -178,7 +179,7 @@
             </span>
           </div>
 
-          <!-- ✅ MOSTRAR SI HAY PROBLEMA EN EL PEDIDO -->
+          <!-- Mostrar si hay problema en el pedido -->
           <% if (order.tiene_problema) { %>
             <div class="info-row problema-row">
               <span class="info-label">
@@ -326,4 +327,4 @@
 
   <%- include('partials/footer') %>
 </body>
-</html>         
+</html>
