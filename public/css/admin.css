@@ -1610,3 +1610,252 @@ select:disabled option {
 .actions-cell .btn-action {
   position: relative;
 }
+/* SOLUCIÓN MEJORADA: Stat Cards con número en una sola línea */
+
+/* ==================== STATS GRID - MANTENER 4 COLUMNAS ==================== */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 25px;
+  margin-bottom: 40px;
+  width: 100%;
+}
+
+/* ==================== STAT CARD - DISEÑO MEJORADO ==================== */
+
+.stat-card {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 255, 0, 0.3);
+  border-radius: 15px;
+  padding: 30px 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  min-height: 140px;
+  /* FIX: Aumentar altura mínima para acomodar número grande */
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 255, 0, 0.2);
+  border-color: rgba(0, 255, 0, 0.5);
+}
+
+/* ==================== STAT ICON ==================== */
+
+.stat-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  flex-shrink: 0;
+  margin-bottom: 15px;
+}
+
+.stat-icon.blue {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.stat-icon.green {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+}
+
+.stat-icon.yellow {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
+
+.stat-icon.purple {
+  background: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+}
+
+/* ==================== STAT INFO ==================== */
+
+.stat-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat-info h3 {
+  font-family: 'Orbitron', sans-serif;
+  color: #00ff00;
+  margin: 0;
+  padding: 0;
+  /* FIX: Font size que se ajusta al contenedor */
+  font-size: 2.2rem;
+  line-height: 1.1;
+  /* Forzar que el número NO se parta */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  /* Permitir que el contenedor crezca si es necesario */
+  word-spacing: 9999px;
+}
+
+.stat-info p {
+  color: #cccccc;
+  font-size: 0.95rem;
+  margin: 0;
+  padding: 0;
+  font-weight: 500;
+}
+
+/* ==================== RESPONSIVE - 3 COLUMNAS EN TABLET ==================== */
+
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .stat-card {
+    padding: 25px 20px;
+    min-height: 130px;
+  }
+
+  .stat-info h3 {
+    font-size: 2rem;
+  }
+
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.8rem;
+  }
+}
+
+/* ==================== RESPONSIVE - 2 COLUMNAS EN MÓVIL PEQUEÑO ==================== */
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .stat-card {
+    padding: 20px 15px;
+    min-height: 120px;
+  }
+
+  .stat-info h3 {
+    font-size: 1.8rem;
+  }
+
+  .stat-icon {
+    width: 55px;
+    height: 55px;
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+  }
+
+  .stat-info p {
+    font-size: 0.85rem;
+  }
+}
+
+/* ==================== RESPONSIVE - 1 COLUMNA EN MÓVIL MUY PEQUEÑO ==================== */
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .stat-card {
+    flex-direction: row;
+    align-items: center;
+    padding: 20px;
+    min-height: 90px;
+  }
+
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.4rem;
+    margin-bottom: 0;
+    margin-right: 15px;
+    flex-shrink: 0;
+  }
+
+  .stat-info h3 {
+    font-size: 1.5rem;
+  }
+
+  .stat-info p {
+    font-size: 0.8rem;
+  }
+}
+
+/* ==================== ALTERNATIVA MODERNA: LAYOUT HORIZONTAL ==================== */
+
+/* Si prefieres que sea horizontal como originalmente */
+.stat-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+}
+
+.stat-icon {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.stat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-info h3 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==================== SOLUCIÓN PARA NÚMEROS MUY GRANDES ==================== */
+
+/* Si el número llega a ser mayor, reduce dinámicamente */
+@supports (display: grid) {
+  /* Para números con más de 12 caracteres */
+  .stat-info h3 {
+    font-size: clamp(1.8rem, 8vw, 2.2rem);
+  }
+}
+
+/* ==================== GRID RESPONSIVO FINAL ==================== */
+
+@media (min-width: 1600px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 1400px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
