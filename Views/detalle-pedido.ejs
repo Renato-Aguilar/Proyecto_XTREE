@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <%- include('partials/head', { cssFile: 'detalle-pedido.css' }) %>
+
 </head>
 <body>
   <div class="bg-animation"></div>
@@ -28,6 +29,125 @@
       <div class="alert alert-success">
         <i class="fa-solid fa-circle-check"></i>
         <%= success[0] %>
+      </div>
+    <% } %>
+
+    <!-- ✅ ÁREA DE IMPRESIÓN - TEXTO PLANO OPTIMIZADO -->
+    <div class="print-area">
+      <!-- Encabezado -->
+      <div class="print-header">
+        <h1>DETALLE DEL PEDIDO</h1>
+      </div>
+
+      <!-- Cliente (solo para admins) -->
+      <% if (isAdmin && clientData) { %>
+        <div class="print-client-info">
+          <p><strong>Pedido de: <%= clientData.nombre %> <%= clientData.apellido %></strong></p>
+        </div>
+        <div class="print-separator"></div>
+      <% } %>
+
+      <!-- Dirección -->
+      <div class="print-address">
+        <div class="print-address-label">Dirección de Envío:</div>
+        <div class="print-address-content">
+          <%= isAdmin && clientData ? clientData.direccion : order.direccion_envio || 'No especificada' %>
+        </div>
+      </div>
+
+      <div class="print-separator-line"></div>
+
+      <!-- Información del Pedido -->
+      <div class="print-order-info">
+        <div class="print-info-row">
+          <span class="print-info-label">Número de Pedido:</span>
+          <span class="print-info-value">#<%= order.id_orden %></span>
+        </div>
+        <div class="print-info-row">
+          <span class="print-info-label">Fecha:</span>
+          <span class="print-info-value">
+            <%= new Date(order.fecha_creacion).toLocaleDateString('es-CL', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            }) %>
+          </span>
+        </div>
+        <% if (order.estado_actual) { %>
+          <div class="print-info-row">
+            <span class="print-info-label">Estado:</span>
+            <span class="print-info-value"><%= order.estado_actual %></span>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="print-separator"></div>
+
+      <!-- Productos -->
+      <div class="print-products">
+        <h3>PRODUCTOS COMPRADOS:</h3>
+        <% details.forEach(item => { %>
+          <div class="print-product-item">
+            <span class="print-product-name"><%= item.nombre %></span>
+            <span class="print-product-qty">(x<%= item.cantidad %>)</span>
+            <span class="print-product-price">$<%= (item.cantidad * item.precio_unitario).toLocaleString('es-CL') %></span>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="print-separator"></div>
+
+      <!-- Total -->
+      <div class="print-total">
+        <div class="print-total-label">TOTAL: $<%= order.monto_total.toLocaleString('es-CL') %></div>
+      </div>
+
+      <!-- Problema (si existe) -->
+      <% if (order.tiene_problema) { %>
+        <div class="print-separator"></div>
+        <div class="print-problem-section">
+          <h4>NOTA: PROBLEMA REPORTADO</h4>
+          <p><%= order.descripcion_problema %></p>
+        </div>
+      <% } %>
+
+      <div class="print-separator"></div>
+
+      <!-- Pie de página -->
+      <div class="print-footer">
+        <p>XTREE Energy - Energía Natural Sin Límites</p>
+        <p>XtreeEnergy@gmail.com | +56 9 0000 0000</p>
+        <p>Documento impreso: <%= new Date().toLocaleDateString('es-CL') %></p>
+      </div>
+    </div>
+
+    <!-- ===========================
+         VISTA DE PANTALLA (No se imprime)
+    =========================== -->
+
+    <!-- Información del cliente (solo para admins) -->
+    <% if (isAdmin && clientData) { %>
+      <div class="client-info-card">
+        <h2>
+          <i class="fa-solid fa-user-circle"></i>
+          Información del Cliente
+        </h2>
+        <div class="client-details">
+          <div class="client-row">
+            <span class="label">Nombre Completo:</span>
+            <span class="value"><%= clientData.nombre %> <%= clientData.apellido %></span>
+          </div>
+          <div class="client-row">
+            <span class="label">Email:</span>
+            <span class="value"><%= clientData.email %></span>
+          </div>
+          <div class="client-row">
+            <span class="label">Dirección de Envío:</span>
+            <span class="value"><%= clientData.direccion || 'No especificada' %></span>
+          </div>
+        </div>
       </div>
     <% } %>
 
@@ -155,7 +275,7 @@
           
           <a href="/mis-pedidos" class="btn-action secondary">
             <i class="fa-solid fa-arrow-left"></i>
-            Volver a Mis Pedidos
+            Volver a Pedidos
           </a>
           
           <button class="btn-action" onclick="window.print()">
@@ -163,43 +283,47 @@
             Imprimir Detalle
           </button>
           
-          <a href="/comprar" class="btn-action primary">
-            <i class="fa-solid fa-shopping-cart"></i>
-            Comprar de Nuevo
-          </a>
+          <% if (!isAdmin) { %>
+            <a href="/comprar" class="btn-action primary">
+              <i class="fa-solid fa-shopping-cart"></i>
+              Comprar de Nuevo
+            </a>
+          <% } %>
         </div>
 
-        <!-- Ayuda -->
-        <div class="help-card">
-          <h3>
-            <i class="fa-solid fa-circle-question"></i>
-            ¿Necesitas Ayuda?
-          </h3>
-          <% if (order.tiene_problema) { %>
-            <p>Tu pedido ha sido reportado con un problema. Nuestro equipo está trabajando para resolverlo.</p>
-            <p>Puedes contactarnos para más información:</p>
-          <% } else { %>
-            <p>Si tienes algún problema con tu pedido, contáctanos:</p>
-          <% } %>
-          <div class="contact-info">
-            <p>
-              <i class="fa-solid fa-envelope"></i>
-              XtreeEnergy@gmail.com
-            </p>
-            <p>
-              <i class="fa-solid fa-phone"></i>
-              +56 9 0000 0000
-            </p>
+        <!-- Ayuda (solo para clientes) -->
+        <% if (!isAdmin) { %>
+          <div class="help-card">
+            <h3>
+              <i class="fa-solid fa-circle-question"></i>
+              ¿Necesitas Ayuda?
+            </h3>
+            <% if (order.tiene_problema) { %>
+              <p>Tu pedido ha sido reportado con un problema. Nuestro equipo está trabajando para resolverlo.</p>
+              <p>Puedes contactarnos para más información:</p>
+            <% } else { %>
+              <p>Si tienes algún problema con tu pedido, contáctanos:</p>
+            <% } %>
+            <div class="contact-info">
+              <p>
+                <i class="fa-solid fa-envelope"></i>
+                XtreeEnergy@gmail.com
+              </p>
+              <p>
+                <i class="fa-solid fa-phone"></i>
+                +56 9 0000 0000
+              </p>
+            </div>
+            <a href="/ayuda/nueva" class="btn-help">
+              <i class="fa-solid fa-headset"></i>
+              Crear Solicitud de Ayuda
+            </a>
           </div>
-          <a href="/ayuda/nueva" class="btn-help">
-            <i class="fa-solid fa-headset"></i>
-            Crear Solicitud de Ayuda
-          </a>
-        </div>
+        <% } %>
       </div>
     </div>
   </main>
 
   <%- include('partials/footer') %>
 </body>
-</html>
+</html>         

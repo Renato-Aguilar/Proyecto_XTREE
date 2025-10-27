@@ -11,9 +11,9 @@
     <div class="orders-header">
       <h1>
         <i class="fa-solid fa-box"></i>
-        Mis Pedidos
+        <%= isAdmin ? 'Todos los Pedidos' : 'Mis Pedidos' %>
       </h1>
-      <p>Revisa el historial de tus compras</p>
+      <p><%= isAdmin ? 'Gestión de pedidos del sistema' : 'Revisa el historial de tus compras' %></p>
     </div>
 
     <!-- Mensajes Flash -->
@@ -38,6 +38,13 @@
             <div class="order-header-card">
               <div class="order-id">
                 <h3>Pedido #<%= order.id_orden %></h3>
+                <% if (isAdmin && order.nombre) { %>
+                  <p class="order-client">
+                    <i class="fa-solid fa-user"></i>
+                    <%= order.nombre %> <%= order.apellido || '' %> 
+                    <span class="client-email">(<%= order.email %>)</span>
+                  </p>
+                <% } %>
                 <p class="order-date">
                   <i class="fa-solid fa-calendar"></i>
                   <%= new Date(order.fecha_creacion).toLocaleDateString('es-CL', { 
@@ -80,12 +87,14 @@
         <div class="empty-icon">
           <i class="fa-solid fa-box-open"></i>
         </div>
-        <h2>No tienes pedidos aún</h2>
-        <p>¡Realiza tu primera compra y empieza a disfrutar de XTREE Energy!</p>
-        <a href="/comprar" class="btn-shop">
-          <i class="fa-solid fa-bolt"></i>
-          Explorar Productos
-        </a>
+        <h2><%= isAdmin ? 'No hay pedidos en el sistema' : 'No tienes pedidos aún' %></h2>
+        <p><%= isAdmin ? 'Los pedidos aparecerán aquí cuando los clientes realicen compras' : '¡Realiza tu primera compra y empieza a disfrutar de XTREE Energy!' %></p>
+        <% if (!isAdmin) { %>
+          <a href="/comprar" class="btn-shop">
+            <i class="fa-solid fa-bolt"></i>
+            Explorar Productos
+          </a>
+        <% } %>
       </div>
     <% } %>
   </main>
