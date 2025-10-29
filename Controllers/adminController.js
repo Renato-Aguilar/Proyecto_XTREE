@@ -69,82 +69,316 @@ const getProductos = async (req, res) => {
   }
 };
 
-const updateProducto = async (req, res) => {
+// ✅ CREAR PRODUCTO
+const createProducto = async (req, res) => {
   let connection;
   try {
-    const { id_producto } = req.params;
-    const { nombre, descripcion, precio, stock } = req.body;
+    const { 
+      nombre, 
+      descripcion, 
+      precio, 
+      stock,
+      color_principal,
+      color_secundario,
+      color_tertiary
+    } = req.body;
+
+    console.log('📝 Datos recibidos:', { nombre, precio, stock });
+    console.log('📸 Archivo:', req.file ? `${req.file.filename} (${req.file.size} bytes)` : 'NO HAY ARCHIVO');
+    console.log('🎨 Colores extraídos:', req.extractedColors);
 
     // ✅ VALIDACIONES
-    if (!nombre || !descripcion || precio === undefined || stock === undefined) {
-      req.flash('error', 'Todos los campos son obligatorios');
-      return res.redirect('/admin/productos');
+    if (!nombre || !descripcion || !precio || stock === undefined) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nombre, descripción, precio y stock son obligatorios'
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'La imagen es obligatoria'
+      });
     }
 
     const precioNum = parseFloat(precio);
     const stockNum = parseInt(stock, 10);
 
     if (isNaN(precioNum) || precioNum <= 0) {
-      req.flash('error', 'Precio debe ser un número válido positivo');
-      return res.redirect('/admin/productos');
+      return res.status(400).json({
+        success: false,
+        error: 'Precio debe ser un número válido positivo'
+      });
     }
 
     if (isNaN(stockNum) || stockNum < 0) {
-      req.flash('error', 'Stock debe ser un número válido no negativo');
-      return res.redirect('/admin/productos');
-    }
-
-    if (nombre.trim().length < 3 || nombre.length > 100) {
-      req.flash('error', 'Nombre debe tener entre 3 y 100 caracteres');
-      return res.redirect('/admin/productos');
-    }
-
-    if (descripcion.trim().length < 10 || descripcion.length > 5000) {
-      req.flash('error', 'Descripción debe tener entre 10 y 5000 caracteres');
-      return res.redirect('/admin/productos');
-    }
-
-    const [productos] = await pool.query(
-      'SELECT id_producto FROM productos WHERE id_producto = ?',
-      [id_producto]
-    );
-
-    if (productos.length === 0) {
-      req.flash('error', 'Producto no encontrado');
-      return res.redirect('/admin/productos');
+      return res.status(400).json({
+        success: false,
+        error: 'Stock debe ser un número válido no negativo'
+      });
     }
 
     connection = await pool.getConnection();
     await connection.beginTransaction();
 
-    await connection.query(
-      'UPDATE productos SET nombre = ?, descripcion = ?, precio = ? WHERE id_producto = ?',
-      [nombre.trim(), descripcion.trim(), precioNum, id_producto]
+    const imagenUrl = req.file.imagePath || `/img/uploads/${req.file.filename}`;
+
+    // Usar colores extraídos o manuales
+    let colores = {
+      color_principal: color_principal || '#00ff00',
+      color_secundario: color_secundario || '#00cc00',
+      color_tertiary: color_tertiary || '#66ff66'
+    };
+
+    if (req.extractedColors) {
+      colores = req.extractedColors;
+      console.log('✅ Usando colores automáticos extraídos');
+    } else {
+      console.log('📝 Usando colores manuales ingresados');
+    }
+
+    console.log('💾 Guardando producto en BD:', { imagenUrl, colores });
+
+    // Insertar producto
+    const [resultado] = await connection.query(
+      `INSERT INTO productos 
+       (nombre, descripcion, precio, imagen_url, color_principal, color_secundario, color_tertiary) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        nombre.trim(),
+        descripcion.trim(),
+        precioNum,
+        imagenUrl,
+        colores.color_principal,
+        colores.color_secundario,
+        colores.color_tertiary
+      ]
     );
 
+    const idProducto = resultado.insertId;
+
+    // Insertar stock
     await connection.query(
-      'UPDATE stock_productos SET cantidad = ? WHERE id_producto = ?',
-      [stockNum, id_producto]
+      'INSERT INTO stock_productos (id_producto, cantidad) VALUES (?, ?)',
+      [idProducto, stockNum]
     );
 
+    // Registrar acción
     await logAdminAction(
       req.session.userId,
-      'Actualizar Producto',
+      'Crear Producto',
       'productos',
-      id_producto,
-      `Nombre: ${nombre}, Precio: ${precioNum}, Stock: ${stockNum}`,
+      idProducto,
+      `${nombre} - Imagen: ${imagenUrl}`,
       req.ip
     );
 
     await connection.commit();
 
-    req.flash('success', 'Producto actualizado correctamente');
-    res.redirect('/admin/productos');
+    console.log('✅ Producto creado exitosamente - ID:', idProducto);
+
+    return res.json({
+      success: true,
+      message: '✅ Producto creado correctamente',
+      productId: idProducto
+    });
+
   } catch (error) {
     if (connection) await connection.rollback();
-    console.error('Error al actualizar producto:', error);
-    req.flash('error', 'Error al actualizar el producto');
-    res.redirect('/admin/productos');
+    console.error('❌ Error al crear producto:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Error al crear producto: ' + error.message
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+// ✅ ACTUALIZAR PRODUCTO
+const updateProducto = async (req, res) => {
+  let connection;
+  try {
+    const { id } = req.params;
+    const { 
+      nombre, 
+      descripcion, 
+      precio,
+      stock,
+      color_principal,
+      color_secundario,
+      color_tertiary
+    } = req.body;
+
+    console.log('📝 Actualizando producto:', { id, nombre, precio, stock });
+
+    if (!id || isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID de producto inválido'
+      });
+    }
+
+    if (!nombre || !descripcion || !precio) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nombre, descripción y precio son obligatorios'
+      });
+    }
+
+    const precioNum = parseFloat(precio);
+
+    if (isNaN(precioNum) || precioNum <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Precio debe ser un número válido positivo'
+      });
+    }
+
+    // Verificar que el producto existe
+    const [productos] = await pool.query(
+      'SELECT id_producto FROM productos WHERE id_producto = ?',
+      [id]
+    );
+
+    if (productos.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Producto no encontrado'
+      });
+    }
+
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    let updateData = {
+      nombre: nombre.trim(),
+      descripcion: descripcion.trim(),
+      precio: precioNum
+    };
+
+    // Usar colores extraídos o manuales
+    if (req.extractedColors) {
+      updateData.color_principal = req.extractedColors.color_principal;
+      updateData.color_secundario = req.extractedColors.color_secundario;
+      updateData.color_tertiary = req.extractedColors.color_tertiary;
+    } else {
+      if (color_principal) updateData.color_principal = color_principal;
+      if (color_secundario) updateData.color_secundario = color_secundario;
+      if (color_tertiary) updateData.color_tertiary = color_tertiary;
+    }
+
+    // Si se subió una imagen
+    if (req.file) {
+      updateData.imagen_url = req.file.imagePath || `/img/uploads/${req.file.filename}`;
+    }
+
+    // Construir query dinámico
+    const fields = Object.keys(updateData);
+    const values = Object.values(updateData);
+    const query = `UPDATE productos SET ${fields.map(f => `${f} = ?`).join(', ')} WHERE id_producto = ?`;
+    
+    await connection.query(query, [...values, id]);
+
+    // Actualizar stock si se proporciona
+    if (stock !== undefined) {
+      const stockNum = parseInt(stock, 10);
+      if (!isNaN(stockNum) && stockNum >= 0) {
+        await connection.query(
+          'UPDATE stock_productos SET cantidad = ? WHERE id_producto = ?',
+          [stockNum, id]
+        );
+        console.log('📦 Stock actualizado:', stockNum);
+      }
+    }
+
+    // Registrar acción
+    await logAdminAction(
+      req.session.userId,
+      'Actualizar Producto',
+      'productos',
+      id,
+      `${nombre} - Precio: ${precioNum} - Stock: ${stock || 'sin cambio'}`,
+      req.ip
+    );
+
+    await connection.commit();
+
+    console.log('✅ Producto actualizado exitosamente');
+
+    return res.json({
+      success: true,
+      message: '✅ Producto actualizado correctamente'
+    });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error('❌ Error al actualizar producto:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Error al actualizar producto: ' + error.message
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+// ✅ ELIMINAR PRODUCTO
+const deleteProducto = async (req, res) => {
+  let connection;
+  try {
+    const { id } = req.params;
+
+    if (!id || isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID de producto inválido'
+      });
+    }
+
+    const [productos] = await pool.query(
+      'SELECT id_producto FROM productos WHERE id_producto = ?',
+      [id]
+    );
+
+    if (productos.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Producto no encontrado'
+      });
+    }
+
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // Eliminar relaciones primero
+    await connection.query('DELETE FROM stock_productos WHERE id_producto = ?', [id]);
+    await connection.query('DELETE FROM productos WHERE id_producto = ?', [id]);
+
+    await logAdminAction(
+      req.session.userId,
+      'Eliminar Producto',
+      'productos',
+      id,
+      'Producto eliminado',
+      req.ip
+    );
+
+    await connection.commit();
+
+    return res.json({
+      success: true,
+      message: 'Producto eliminado correctamente'
+    });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error('Error al eliminar producto:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Error al eliminar producto'
+    });
   } finally {
     if (connection) connection.release();
   }
@@ -615,7 +849,9 @@ const updateUsuario = async (req, res) => {
 module.exports = {
   getDashboard,
   getProductos,
+  createProducto,
   updateProducto,
+  deleteProducto,
   getPedidos,
   marcarProblema,
   resolverProblema,

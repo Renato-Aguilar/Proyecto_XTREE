@@ -53,14 +53,16 @@ const pageRoutes = require('./Routes/pageRoutes');
 const authRoutes = require('./Routes/authRoutes');
 const cartRoutes = require('./Routes/cartRoutes');
 const adminRoutes = require('./Routes/adminRoutes');
-const helpRoutes = require('./Routes/helpRoutes'); // NUEVA RUTA
+const helpRoutes = require('./Routes/helpRoutes');
+const apiRoutes = require('./Routes/apiRoutes');
 
 // Montar rutas
 app.use('/', pageRoutes);
 app.use('/', authRoutes);
 app.use('/', cartRoutes);
 app.use('/admin', adminRoutes);
-app.use('/ayuda', helpRoutes); // RUTAS DE AYUDA CLIENTE
+app.use('/ayuda', helpRoutes);
+app.use('/api', apiRoutes);
 
 // ----------------------
 // Servidor

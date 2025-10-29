@@ -1,33 +1,91 @@
-// ==================== routes/adminRoutes.js ====================
 const express = require('express');
 const router = express.Router();
 
-// ✅ IMPORTAR CONTROLADORES
-const adminController = require('../Controllers/adminController');
-const helpController = require('../Controllers/helpController');
+// Middlewares
+const { isAdmin } = require('../middleware/adminMiddleware');
+const upload = require('../config/multer');
+const processImage = require('../middleware/imageProcessor');
+const extractColors = require('../middleware/colorExtractor');
 
-// ✅ IMPORTAR MIDDLEWARE
-const { isAdmin, isSuperAdmin } = require('../middleware/adminMiddleware');
+// Controladores
+const {
+  getDashboard,
+  getProductos,
+  createProducto,
+  updateProducto,
+  deleteProducto,
+  getPedidos,
+  marcarProblema,
+  resolverProblema,
+  getSolicitudesAyuda,
+  getDetalleSolicitud,
+  responderSolicitud,
+  getUsuarios,
+  updateUsuario
+} = require('../Controllers/adminController');
+
+// ==================== PROTEGER TODAS LAS RUTAS ====================
+router.use(isAdmin);
 
 // ==================== DASHBOARD ====================
-router.get('/dashboard', isAdmin, adminController.getDashboard);
+router.get('/dashboard', getDashboard);
 
 // ==================== GESTIÓN DE PRODUCTOS ====================
-router.get('/productos', isAdmin, adminController.getProductos);
-router.post('/productos/:id_producto', isAdmin, adminController.updateProducto);
+router.get('/productos', getProductos);
+
+// ✅ CREAR PRODUCTO (POST con imagen)
+router.post('/productos', 
+  (req, res, next) => {
+    upload.single('imagen')(req, res, (err) => {
+      if (err) {
+        console.error('❌ Error en Multer:', err.message);
+        return res.status(400).json({ 
+          success: false, 
+          error: err.message 
+        });
+      }
+      next();
+    });
+  },
+  processImage,
+  extractColors,
+  createProducto
+);
+
+// ✅ ACTUALIZAR PRODUCTO (PUT con imagen opcional)
+router.put('/productos/:id', 
+  (req, res, next) => {
+    upload.single('imagen')(req, res, (err) => {
+      if (err) {
+        console.error('❌ Error en Multer:', err.message);
+        return res.status(400).json({ 
+          success: false, 
+          error: err.message 
+        });
+      }
+      next();
+    });
+  },
+  processImage,
+  extractColors,
+  updateProducto
+);
+
+// ✅ ELIMINAR PRODUCTO
+router.delete('/productos/:id', deleteProducto);
 
 // ==================== GESTIÓN DE PEDIDOS ====================
-router.get('/pedidos', isAdmin, adminController.getPedidos);
-router.post('/pedidos/:id_orden/problema', isAdmin, adminController.marcarProblema);
-router.post('/pedidos/:id_orden/resolver', isAdmin, adminController.resolverProblema);
+router.get('/pedidos', getPedidos);
+router.post('/pedidos/:id_orden/marcar-problema', marcarProblema);
+router.post('/pedidos/:id_orden/resolver-problema', resolverProblema);
 
 // ==================== CENTRO DE AYUDA ====================
-router.get('/ayuda', isAdmin, adminController.getSolicitudesAyuda);
-router.get('/ayuda/:id', isAdmin, adminController.getDetalleSolicitud);
-router.post('/ayuda/:id/responder', isAdmin, adminController.responderSolicitud);
+router.get('/ayuda', getSolicitudesAyuda);
+router.get('/ayuda/:id', getDetalleSolicitud);
+router.post('/ayuda/:id/responder', responderSolicitud);
 
 // ==================== GESTIÓN DE USUARIOS ====================
-router.get('/usuarios', isAdmin, adminController.getUsuarios);
-router.post('/usuarios/:id_usuario', isAdmin, adminController.updateUsuario);
+router.get('/usuarios', getUsuarios);
+router.put('/usuarios/:id_usuario', updateUsuario);
 
 module.exports = router;

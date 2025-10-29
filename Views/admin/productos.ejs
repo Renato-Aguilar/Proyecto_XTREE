@@ -1,97 +1,514 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <%- include('../partials/head', { cssFile: 'admin.css' }) %>
-</head>
-<body>
-  <div class="bg-animation"></div>
-  <%- include('../partials/header') %>
+<%- include('../partials/head', { title: 'Gestión de Productos', cssFile: 'admin.css' }) %>
 
-  <div class="admin-layout">
+<body>
+  <%- include('../partials/header', { activePage: 'admin' }) %>
+
+  <div class="admin-container">
     <%- include('../partials/admin-sidebar') %>
 
     <main class="admin-content">
       <div class="admin-header">
-        <h1>
-          <i class="fa-solid fa-box"></i>
-          Gestión de Productos
-        </h1>
-        <p>Administra el catálogo de productos XTREE Energy</p>
+        <h1><i class="fas fa-box"></i> Gestión de Productos</h1>
+        <button class="btn btn-primary" onclick="openProductModal()">
+          <i class="fas fa-plus"></i> Nuevo Producto
+        </button>
       </div>
 
-      <!-- Mensajes Flash -->
-      <% if (locals.error && error.length > 0) { %>
-        <div class="alert alert-error">
-          <i class="fa-solid fa-circle-exclamation"></i>
-          <%= error[0] %>
+      <!-- TABLA DE PRODUCTOS EXISTENTES -->
+      <section class="products-section">
+        <div class="section-header">
+          <h2>Productos Registrados</h2>
+          <span class="product-count"><%= productos.length %> productos</span>
         </div>
-      <% } %>
 
-      <% if (locals.success && success.length > 0) { %>
-        <div class="alert alert-success">
-          <i class="fa-solid fa-circle-check"></i>
-          <%= success[0] %>
-        </div>
-      <% } %>
-
-      <div class="products-grid">
-        <% productos.forEach(producto => { %>
-          <div class="product-admin-card">
-            <div class="product-image-admin">
-              <img src="<%= producto.imagen_url || '/img/default.png' %>" alt="<%= producto.nombre %>">
-              <% if (producto.stock < 20) { %>
-                <span class="stock-alert critical">
-                  <i class="fa-solid fa-exclamation-triangle"></i>
-                  Stock Crítico
-                </span>
-              <% } else if (producto.stock < 50) { %>
-                <span class="stock-alert warning">
-                  <i class="fa-solid fa-exclamation"></i>
-                  Stock Bajo
-                </span>
+        <div class="table-responsive">
+          <table class="products-table">
+            <thead>
+              <tr>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Color</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (productos && productos.length > 0) { %>
+                <% productos.forEach(producto => { %>
+                  <% const stock = producto.stock || 0; %>
+                  <tr>
+                    <td class="img-cell">
+                      <img src="<%= producto.imagen_url || '/img/producto-default.png' %>" 
+                           alt="<%= producto.nombre %>"
+                           onerror="this.src='/img/producto-default.png'">
+                    </td>
+                    <td><strong><%= producto.nombre %></strong></td>
+                    <td>$<%= parseInt(producto.precio).toLocaleString() %></td>
+                    <td>
+                      <span class="stock-badge <%= stock > 50 ? 'stock-alto' : stock > 20 ? 'stock-medio' : 'stock-bajo' %>">
+                        <%= stock %>
+                      </span>
+                    </td>
+                    <td>
+                      <div class="color-preview">
+                        <div class="color-dot" style="background-color: <%= producto.color_principal || '#00ff00' %>;" 
+                             title="<%= producto.color_principal %>"></div>
+                      </div>
+                    </td>
+                    <td class="actions-cell">
+                      <button class="btn-action edit" 
+                              onclick="editProduct(<%= producto.id_producto %>)" 
+                              title="Editar">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn-action delete" 
+                              onclick="deleteProduct(<%= producto.id_producto %>)" 
+                              title="Eliminar">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No hay productos registrados</p>
+                  </td>
+                </tr>
               <% } %>
-            </div>
-
-            <div class="product-info-admin">
-              <h3><%= producto.nombre %></h3>
-              <p class="product-id">ID: #<%= producto.id_producto %></p>
-              
-              <form action="/admin/productos/<%= producto.id_producto %>" method="POST" class="product-form">
-                <div class="form-group">
-                  <label>Nombre del Producto</label>
-                  <input type="text" name="nombre" value="<%= producto.nombre %>" required>
-                </div>
-
-                <div class="form-group">
-                  <label>Descripción</label>
-                  <textarea name="descripcion" rows="4" required><%= producto.descripcion %></textarea>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Precio (CLP)</label>
-                    <input type="number" name="precio" value="<%= producto.precio %>" min="0" required>
-                  </div>
-
-                  <div class="form-group">
-                    <label>Stock</label>
-                    <input type="number" name="stock" value="<%= producto.stock || 0 %>" min="0" required>
-                  </div>
-                </div>
-
-                <button type="submit" class="btn-save">
-                  <i class="fa-solid fa-save"></i>
-                  Guardar Cambios
-                </button>
-              </form>
-            </div>
-          </div>
-        <% }) %>
-      </div>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
   </div>
 
+  <!-- MODAL DE CREAR/EDITAR PRODUCTO -->
+  <div id="productModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Nuevo Producto</h2>
+        <button class="close-btn" onclick="closeProductModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form id="productForm" method="POST" enctype="multipart/form-data" class="product-form" action="">
+        <input type="hidden" id="productId" name="id_producto">
+        <input type="hidden" id="method" name="_method" value="POST">
+
+        <!-- SECCIÓN 1: INFORMACIÓN BÁSICA -->
+        <div class="form-section">
+          <h3><i class="fas fa-info-circle"></i> Información Básica</h3>
+          
+          <div class="form-group">
+            <label for="nombre">Nombre del Producto *</label>
+            <input type="text" id="nombre" name="nombre" required 
+                   placeholder="Ej: Thunder, Cosmos">
+            <span class="helper-text">Nombre único y descriptivo</span>
+          </div>
+
+          <div class="form-group">
+            <label for="descripcion">Descripción *</label>
+            <textarea id="descripcion" name="descripcion" required 
+                      placeholder="Describe el producto, sabores, beneficios..."
+                      maxlength="5000"></textarea>
+            <span class="helper-text">Máximo 5000 caracteres</span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="precio">Precio (CLP) *</label>
+              <input type="number" id="precio" name="precio" required 
+                     placeholder="Ej: 5000" step="100" min="0">
+              <span class="helper-text">Precio en pesos chilenos</span>
+            </div>
+            <div class="form-group">
+              <label for="stock">Stock Inicial *</label>
+              <input type="number" id="stock" name="stock" required 
+                     placeholder="Ej: 100" min="0">
+              <span class="helper-text">Cantidad disponible</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: IMAGEN Y COLORES -->
+        <div class="form-section">
+          <h3><i class="fas fa-image"></i> Imagen y Colores</h3>
+          
+          <div class="form-group">
+            <label for="imagen">Subir Imagen *</label>
+            <div class="file-upload-zone" id="uploadZone">
+              <input type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp"
+                     onchange="previewImage(event)">
+              <div class="upload-content">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Arrastra la imagen aquí o haz clic para seleccionar</p>
+                <span class="file-hint">JPG, PNG, WebP | Máx 5MB</span>
+              </div>
+            </div>
+            <div id="imagePreview" class="image-preview-container" style="display: none;">
+              <img id="previewImg" src="" alt="Vista previa">
+              <button type="button" onclick="clearImage()" class="btn-clear">
+                <i class="fas fa-times"></i> Cambiar imagen
+              </button>
+            </div>
+          </div>
+
+          <!-- COLORES -->
+          <div class="colors-section">
+            <div class="colors-header">
+              <h4>Colores del Tema</h4>
+              <button type="button" onclick="extractColors()" class="btn btn-secondary">
+                <i class="fas fa-magic"></i> Extraer de Imagen
+              </button>
+            </div>
+
+            <div class="form-row colors-row">
+              <div class="form-group color-group">
+                <label for="colorPrincipal">Color Principal</label>
+                <div class="color-input-wrapper">
+                  <input type="color" id="colorPrincipal" name="color_principal" 
+                         value="#00ff00" onchange="updateColorPreview()">
+                  <input type="text" id="colorPrincipalHex" value="#00ff00" 
+                         readonly class="color-hex-input">
+                </div>
+                <small>Color dominante</small>
+              </div>
+
+              <div class="form-group color-group">
+                <label for="colorSecundario">Color Secundario</label>
+                <div class="color-input-wrapper">
+                  <input type="color" id="colorSecundario" name="color_secundario" 
+                         value="#00cc00" onchange="updateColorPreview()">
+                  <input type="text" id="colorSecundarioHex" value="#00cc00" 
+                         readonly class="color-hex-input">
+                </div>
+                <small>Color de acentos</small>
+              </div>
+
+              <div class="form-group color-group">
+                <label for="colorTerciario">Color Terciario</label>
+                <div class="color-input-wrapper">
+                  <input type="color" id="colorTerciario" name="color_tertiary" 
+                         value="#66ff66" onchange="updateColorPreview()">
+                  <input type="text" id="colorTerciarioHex" value="#66ff66" 
+                         readonly class="color-hex-input">
+                </div>
+                <small>Color de detalles</small>
+              </div>
+            </div>
+
+            <!-- PREVIEW DEL TEMA -->
+            <div class="theme-preview">
+              <h4>Vista Previa del Tema</h4>
+              <div class="preview-box">
+                <div class="preview-content" id="previewContent">
+                  <div class="preview-title">Nombre Producto</div>
+                  <button type="button" class="preview-btn-primary">Descubre Más</button>
+                  <button type="button" class="preview-btn-secondary">Ir a Comprar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 3: ACCIONES -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Guardar Producto
+          </button>
+          <button type="button" onclick="closeProductModal()" class="btn btn-cancel">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <%- include('../partials/footer') %>
-<script src="/js/admin-modal.js"></script>
+
+  <script>
+    // FUNCIONES DEL MODAL Y FORMULARIO
+
+    function openProductModal() {
+      document.getElementById('productModal').classList.add('show');
+      document.getElementById('modalTitle').textContent = 'Nuevo Producto';
+      document.getElementById('productForm').reset();
+      document.getElementById('productId').value = '';
+      document.getElementById('method').value = 'POST';
+      document.getElementById('imagen').value = '';
+      document.getElementById('imagePreview').style.display = 'none';
+      document.getElementById('colorPrincipal').value = '#00ff00';
+      document.getElementById('colorSecundario').value = '#00cc00';
+      document.getElementById('colorTerciario').value = '#66ff66';
+      updateColorPreview();
+    }
+
+    function closeProductModal() {
+      document.getElementById('productModal').classList.remove('show');
+      document.getElementById('imagePreview').style.display = 'none';
+      document.getElementById('productForm').reset();
+    }
+
+    function editProduct(id) {
+      // Cargar datos del producto
+      fetch(`/api/productos/${id}`)
+        .then(response => response.json())
+        .then(result => {
+          if (result.success) {
+            const producto = result.data;
+            document.getElementById('productId').value = id;
+            document.getElementById('nombre').value = producto.nombre;
+            document.getElementById('descripcion').value = producto.descripcion;
+            document.getElementById('precio').value = producto.precio;
+            document.getElementById('stock').value = producto.stock || 0;
+            document.getElementById('colorPrincipal').value = producto.color_principal || '#00ff00';
+            document.getElementById('colorSecundario').value = producto.color_secundario || '#00cc00';
+            document.getElementById('colorTerciario').value = producto.color_tertiary || '#66ff66';
+            
+            document.getElementById('method').value = 'PUT';
+            document.getElementById('modalTitle').textContent = 'Editar Producto';
+            
+            // Preview de imagen actual
+            if (producto.imagen_url) {
+              document.getElementById('previewImg').src = producto.imagen_url;
+              document.getElementById('imagePreview').style.display = 'flex';
+            }
+            
+            updateColorPreview();
+            document.getElementById('productModal').classList.add('show');
+          }
+        })
+        .catch(err => alert('Error al cargar el producto'));
+    }
+
+    function deleteProduct(id) {
+      if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+        fetch(`/admin/productos/${id}`, { method: 'DELETE' })
+          .then(() => location.reload())
+          .catch(err => alert('Error al eliminar'));
+      }
+    }
+
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('previewImg').src = e.target.result;
+          document.getElementById('imagePreview').style.display = 'flex';
+        };
+        reader.readAsDataURL(file);
+        console.log('📸 Archivo seleccionado:', file.name, file.size);
+      }
+    }
+
+    function clearImage() {
+      document.getElementById('imagen').value = '';
+      document.getElementById('imagePreview').style.display = 'none';
+    }
+
+    // Drag and drop para upload
+    const uploadZone = document.getElementById('uploadZone');
+    
+    uploadZone.addEventListener('click', () => {
+      document.getElementById('imagen').click();
+    });
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        document.getElementById('imagen').files = files;
+        previewImage({ target: { files: files } });
+      }
+    });
+
+    function clearImage() {
+      document.getElementById('imagen').value = '';
+      document.getElementById('imagePreview').style.display = 'none';
+    }
+
+    function updateColorPreview() {
+      const color1 = document.getElementById('colorPrincipal').value;
+      const color2 = document.getElementById('colorSecundario').value;
+      const color3 = document.getElementById('colorTerciario').value;
+
+      document.getElementById('colorPrincipalHex').value = color1;
+      document.getElementById('colorSecundarioHex').value = color2;
+      document.getElementById('colorTerciarioHex').value = color3;
+
+      const previewContent = document.getElementById('previewContent');
+      previewContent.style.setProperty('--color-principal', color1);
+      previewContent.style.setProperty('--color-secundario', color2);
+      previewContent.style.setProperty('--color-tertiary', color3);
+
+      document.querySelectorAll('.preview-btn-primary').forEach(btn => {
+        btn.style.color = color1;
+        btn.style.borderColor = color1;
+      });
+
+      document.querySelectorAll('.preview-btn-secondary').forEach(btn => {
+        btn.style.background = color1;
+        btn.style.borderColor = color2;
+      });
+    }
+
+    function extractColors() {
+      const file = document.getElementById('imagen').files[0];
+      
+      if (!file) {
+        alert('❌ Por favor selecciona una imagen primero');
+        return;
+      }
+
+      // Usar la API Web de extracción de colores simple
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const img = new Image();
+        img.onload = () => {
+          // Crear canvas para analizar la imagen
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = 100;
+          canvas.height = 100;
+          ctx.drawImage(img, 0, 0, 100, 100);
+
+          // Obtener píxeles
+          const imageData = ctx.getImageData(0, 0, 100, 100);
+          const data = imageData.data;
+
+          // Contar colores más frecuentes
+          const colors = {};
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+            colors[hex] = (colors[hex] || 0) + 1;
+          }
+
+          // Obtener top 3 colores
+          const sorted = Object.entries(colors).sort((a, b) => b[1] - a[1]);
+          
+          const color1 = sorted[0]?.[0] || '#00ff00';
+          const color2 = sorted[1]?.[0] || '#00cc00';
+          const color3 = sorted[2]?.[0] || '#66ff66';
+
+          // Asignar colores
+          document.getElementById('colorPrincipal').value = color1;
+          document.getElementById('colorSecundario').value = color2;
+          document.getElementById('colorTerciario').value = color3;
+
+          updateColorPreview();
+          alert('✅ Colores extraídos automáticamente:\n' + color1 + '\n' + color2 + '\n' + color3);
+          console.log('🎨 Colores extraídos:', { color1, color2, color3 });
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Cerrar modal al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      const modal = document.getElementById('productModal');
+      if (e.target === modal) {
+        closeProductModal();
+      }
+    });
+
+    // Manejo del formulario
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const id = document.getElementById('productId').value;
+      const nombre = document.getElementById('nombre').value.trim();
+      const descripcion = document.getElementById('descripcion').value.trim();
+      const precio = document.getElementById('precio').value;
+      const stock = document.getElementById('stock').value;
+      const file = document.getElementById('imagen').files[0];
+      const color_principal = document.getElementById('colorPrincipal').value;
+      const color_secundario = document.getElementById('colorSecundario').value;
+      const color_tertiary = document.getElementById('colorTerciario').value;
+
+      // Validaciones
+      if (!nombre || !descripcion || !precio || stock === '') {
+        alert('❌ Por favor completa todos los campos obligatorios');
+        return;
+      }
+
+      if (!id && !file) {
+        alert('❌ Por favor selecciona una imagen');
+        return;
+      }
+
+      if (file && file.size > 5 * 1024 * 1024) {
+        alert('❌ La imagen no puede superar 5MB');
+        return;
+      }
+
+      const url = id ? `/admin/productos/${id}` : '/admin/productos';
+      const method = id ? 'PUT' : 'POST';
+
+      // Crear FormData
+      const formData = new FormData();
+      formData.append('nombre', nombre);
+      formData.append('descripcion', descripcion);
+      formData.append('precio', precio);
+      formData.append('stock', stock);
+      formData.append('color_principal', color_principal);
+      formData.append('color_secundario', color_secundario);
+      formData.append('color_tertiary', color_tertiary);
+      if (file) {
+        formData.append('imagen', file);
+      }
+
+      console.log('📤 Enviando:', { url, method, nombre, file: file?.name || 'sin archivo' });
+
+      fetch(url, {
+        method: method,
+        body: formData
+      })
+      .then(response => {
+        console.log('📥 Respuesta status:', response.status);
+        return response.json();
+      })
+      .then(result => {
+        console.log('✅ Respuesta:', result);
+        if (result.success) {
+          alert('✅ ' + result.message);
+          location.reload();
+        } else {
+          alert('❌ Error: ' + (result.error || 'No especificado'));
+        }
+      })
+      .catch(err => {
+        console.error('❌ Error en fetch:', err);
+        alert('❌ Error al guardar el producto: ' + err.message);
+      });
+    });
+
+    // Prevenir que los botones del preview envíen el formulario
+    document.querySelectorAll('.preview-btn-primary, .preview-btn-secondary').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+      });
+    });
+
+    // Inicializar
+    updateColorPreview();
+  </script>
 </body>
-</html>
