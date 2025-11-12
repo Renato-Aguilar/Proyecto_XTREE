@@ -1,7 +1,105 @@
-// ==================== admin-modal.js - SCRIPT ADMIN COMPLETO ====================
-// Ubicación: public/js/admin-modal.js
+// ==================== admin-modal.js - VERSIÓN UNIFICADA CORREGIDA ====================
+// Maneja AMBOS modales: Productos y Usuarios sin conflictos
+
+class ModalManager {
+  constructor() {
+    this.modals = new Map();
+    this.activeModal = null;
+    this.init();
+  }
+
+  init() {
+    this.scanModals();
+    this.attachGlobalListeners();
+    console.log('✅ ModalManager inicializado. Modales:', Array.from(this.modals.keys()));
+  }
+
+  scanModals() {
+    document.querySelectorAll('.modal').forEach(modal => {
+      if (modal.id) {
+        this.modals.set(modal.id, modal);
+      }
+    });
+  }
+
+  open(modalId) {
+    if (this.activeModal && this.activeModal !== modalId) {
+      this.close(this.activeModal);
+    }
+
+    const modal = this.modals.get(modalId);
+    if (!modal) {
+      console.error(`❌ Modal no encontrado: ${modalId}`);
+      return false;
+    }
+
+    modal.classList.add('show');
+    modal.style.display = 'flex';
+    this.activeModal = modalId;
+
+    const firstInput = modal.querySelector('input:not([type="hidden"]), textarea, select');
+    if (firstInput) {
+      setTimeout(() => firstInput.focus(), 100);
+    }
+
+    console.log('📖 Modal abierto:', modalId);
+    return true;
+  }
+
+  close(modalId) {
+    const modal = this.modals.get(modalId);
+    if (!modal) return false;
+
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+    if (this.activeModal === modalId) {
+      this.activeModal = null;
+    }
+
+    console.log('❌ Modal cerrado:', modalId);
+    return true;
+  }
+
+  closeAll() {
+    this.modals.forEach((modal, id) => {
+      this.close(id);
+    });
+  }
+
+  attachGlobalListeners() {
+    // Cerrar modal al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (this.activeModal) {
+        const modal = this.modals.get(this.activeModal);
+        if (modal && e.target === modal) {
+          this.close(this.activeModal);
+        }
+      }
+    });
+
+    // Cerrar modal con ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.activeModal) {
+        this.close(this.activeModal);
+      }
+    });
+
+    // Botones de cerrar modal
+    document.querySelectorAll('.close-btn, .modal-close').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const modal = e.target.closest('.modal');
+        if (modal && modal.id) {
+          this.close(modal.id);
+        }
+      });
+    });
+  }
+}
+
+let modalManager = null;
 
 document.addEventListener('DOMContentLoaded', function() {
+  modalManager = new ModalManager();
 
   // ==================== 1. INICIALIZAR SELECTS ====================
   function initializeSelects() {
@@ -35,6 +133,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputs = form.querySelectorAll('input[required], textarea[required], select[required]');
     
     inputs.forEach(input => {
+      if (input.type === 'hidden') return;
+      
       if (!input.value || !input.value.trim()) {
         errors.push(`${input.name} es obligatorio`);
         input.style.borderColor = '#ef4444';
@@ -42,28 +142,24 @@ document.addEventListener('DOMContentLoaded', function() {
         input.style.borderColor = 'rgba(0, 255, 0, 0.3)';
       }
 
-      // Validar minlength
       if (input.minLength && input.value.length < input.minLength) {
         errors.push(`${input.name} debe tener al menos ${input.minLength} caracteres`);
         input.style.borderColor = '#ef4444';
       }
 
-      // Validar maxlength
       if (input.maxLength && input.value.length > input.maxLength) {
         errors.push(`${input.name} no puede exceder ${input.maxLength} caracteres`);
         input.style.borderColor = '#ef4444';
       }
 
-      // Validar email
       if (input.type === 'email') {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(input.value)) {
+        if (input.value && !emailRegex.test(input.value)) {
           errors.push(`${input.name} debe ser un email válido`);
           input.style.borderColor = '#ef4444';
         }
       }
 
-      // Validar números
       if (input.type === 'number') {
         const value = parseFloat(input.value);
         if (isNaN(value)) {
@@ -81,13 +177,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ==================== 3. VALIDAR FORMULARIOS DE PRODUCTOS ====================
-  const productForms = document.querySelectorAll('.product-form');
-  productForms.forEach(form => {
-    form.addEventListener('submit', function(e) {
+  const productForm = document.getElementById('productForm');
+  if (productForm) {
+    productForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
       const errors = validateForm(this);
-
       if (errors.length > 0) {
-        e.preventDefault();
         showNotification(errors[0], 'error');
         return false;
       }
@@ -97,93 +193,138 @@ document.addEventListener('DOMContentLoaded', function() {
       const precio = this.querySelector('input[name="precio"]');
       const stock = this.querySelector('input[name="stock"]');
 
-      if (nombre.value.trim().length < 3) {
-        e.preventDefault();
+      if (nombre && nombre.value.trim().length < 3) {
         showNotification('Nombre debe tener al menos 3 caracteres', 'error');
         return false;
       }
 
-      if (descripcion.value.trim().length < 10) {
-        e.preventDefault();
+      if (descripcion && descripcion.value.trim().length < 10) {
         showNotification('Descripción debe tener al menos 10 caracteres', 'error');
         return false;
       }
 
-      const precioNum = parseFloat(precio.value);
-      if (isNaN(precioNum) || precioNum <= 0) {
-        e.preventDefault();
-        showNotification('Precio debe ser un número válido positivo', 'error');
-        return false;
+      if (precio) {
+        const precioNum = parseFloat(precio.value);
+        if (isNaN(precioNum) || precioNum <= 0) {
+          showNotification('Precio debe ser un número válido positivo', 'error');
+          return false;
+        }
       }
 
-      const stockNum = parseInt(stock.value, 10);
-      if (isNaN(stockNum) || stockNum < 0) {
-        e.preventDefault();
-        showNotification('Stock debe ser un número válido no negativo', 'error');
-        return false;
+      if (stock) {
+        const stockNum = parseInt(stock.value, 10);
+        if (isNaN(stockNum) || stockNum < 0) {
+          showNotification('Stock debe ser un número válido no negativo', 'error');
+          return false;
+        }
       }
+
+      // ✅ IMPORTANTE: Crear FormData para mantener multipart/form-data
+      const formData = new FormData(this);
+      const url = this.action;
+      const method = document.getElementById('method')?.value || 'POST';
+
+      console.log('📤 Enviando Producto:', {
+        url,
+        method,
+        nombre: nombre?.value,
+        archivo: this.querySelector('input[name="imagen"]')?.files[0]?.name || 'sin archivo'
+      });
 
       disableSubmitButton(this);
-    });
-  });
 
-  // ==================== 5. VALIDAR FORMULARIOS DE USUARIO ====================
+      fetch(url, {
+        method: method,
+        body: formData
+        // NO incluir Content-Type - el navegador lo establecerá automáticamente con boundary
+      })
+      .then(response => {
+        console.log('📥 Response Status:', response.status);
+        return response.json();
+      })
+      .then(result => {
+        console.log('✅ Respuesta:', result);
+        if (result.success) {
+          showNotification('✅ ' + result.message, 'success');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          showNotification('❌ Error: ' + (result.error || result.message || 'No especificado'), 'error');
+          enableSubmitButton(this);
+        }
+      })
+      .catch(err => {
+        console.error('❌ Error en fetch:', err);
+        showNotification('❌ Error: ' + err.message, 'error');
+        enableSubmitButton(this);
+      });
+    });
+  }
+
+  // ==================== 4. VALIDAR FORMULARIOS DE USUARIO ====================
   const userForm = document.getElementById('formEditarUsuario');
   if (userForm) {
     userForm.addEventListener('submit', function(e) {
-      const errors = validateForm(this);
+      e.preventDefault();
 
+      const errors = validateForm(this);
       if (errors.length > 0) {
-        e.preventDefault();
         showNotification(errors[0], 'error');
         return false;
       }
 
-      disableSubmitButton(this);
-    });
-  }
+      const data = {
+        nombre: document.getElementById('edit_nombre')?.value,
+        apellido: document.getElementById('edit_apellido')?.value,
+        email: document.getElementById('edit_email')?.value,
+        direccion: document.getElementById('edit_direccion')?.value,
+        rol: document.getElementById('edit_rol')?.value
+      };
 
-  // ==================== 6. VALIDAR FORMULARIOS DE PROBLEMA EN PEDIDO ====================
-  const problemForm = document.getElementById('formProblema');
-  if (problemForm) {
-    problemForm.addEventListener('submit', function(e) {
-      const textarea = this.querySelector('textarea[name="descripcion_problema"]');
+      const url = this.action;
 
-      if (!textarea || !textarea.value.trim()) {
-        e.preventDefault();
-        showNotification('Por favor describe el problema', 'error');
-        textarea?.focus();
-        return false;
-      }
-
-      if (textarea.value.trim().length < 10) {
-        e.preventDefault();
-        showNotification('La descripción debe tener al menos 10 caracteres', 'error');
-        textarea.focus();
-        return false;
-      }
-
-      if (textarea.value.length > 1000) {
-        e.preventDefault();
-        showNotification('La descripción no puede exceder 1000 caracteres', 'error');
-        return false;
-      }
+      console.log('📤 Enviando Usuario:', { url, ...data });
 
       disableSubmitButton(this);
-    });
-  }
 
-  // ==================== 7. CERRAR MODAL CON ESC ====================
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      const openModals = document.querySelectorAll('.modal[style*="display: flex"]');
-      openModals.forEach(modal => {
-        modal.style.display = 'none';
+      fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        console.log('📥 Response Status:', response.status);
+        return response.json();
+      })
+      .then(result => {
+        console.log('✅ Respuesta:', result);
+        if (result.success) {
+          showNotification('✅ ' + (result.message || 'Usuario actualizado'), 'success');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          showNotification('❌ Error: ' + (result.error || result.message || 'No especificado'), 'error');
+          enableSubmitButton(this);
+        }
+      })
+      .catch(err => {
+        console.error('❌ Error en fetch:', err);
+        showNotification('❌ Error: ' + err.message, 'error');
+        enableSubmitButton(this);
       });
-    }
+    });
+  }
+
+  // ==================== 5. PREVENIR CLIC EN MODAL CONTENT ====================
+  const modalContents = document.querySelectorAll('.modal-content');
+  modalContents.forEach(content => {
+    content.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
   });
 
-  // ==================== 8. CONTADOR DE CARACTERES ====================
+  // ==================== 6. CONTADOR DE CARACTERES ====================
   const textareas = document.querySelectorAll('textarea');
   textareas.forEach(textarea => {
     const minLength = parseInt(textarea.getAttribute('minlength')) || 10;
@@ -207,33 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
     textarea.dispatchEvent(new Event('input'));
   });
 
-  // ==================== 9. PREVENIR CLIC EN MODAL CONTENT ====================
-  const modalContents = document.querySelectorAll('.modal-content');
-  modalContents.forEach(content => {
-    content.addEventListener('click', function(e) {
-      e.stopPropagation();
-    });
-  });
-
-  // ==================== 10. SMOOTH SCROLL A ERRORES ====================
-  const errorAlerts = document.querySelectorAll('.alert-error');
-  if (errorAlerts.length > 0) {
-    errorAlerts[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-
-  // ==================== 11. CONFIRMACIONES PARA ACCIONES ====================
-  const deleteButtons = document.querySelectorAll('[data-confirm]');
-  deleteButtons.forEach(button => {
-    button.addEventListener('click', function(e) {
-      const message = this.getAttribute('data-confirm') || '¿Estás seguro?';
-      if (!confirm(message)) {
-        e.preventDefault();
-        return false;
-      }
-    });
-  });
-
-  // ==================== 12. PREVENIR ENVÍO DOBLE ====================
+  // ==================== 7. PREVENIR ENVÍO DOBLE ====================
   let formSubmitting = false;
   document.querySelectorAll('form').forEach(form => {
     form.addEventListener('submit', function(e) {
@@ -250,9 +365,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // ==================== 13. ATAJOS DE TECLADO ====================
+  // ==================== 8. ATAJOS DE TECLADO ====================
   document.addEventListener('keydown', function(e) {
-    // Ctrl/Cmd + Enter para enviar formularios
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       const activeElement = document.activeElement;
       if (activeElement && activeElement.tagName === 'TEXTAREA') {
@@ -264,7 +378,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // Ctrl/Cmd + K para buscar
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
       const searchInput = document.querySelector('input[type="search"], input[name*="search"]');
@@ -274,6 +387,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
+
+  console.log('✅ Admin modal system inicializado');
 });
 
 // ==================== FUNCIONES GLOBALES ====================
@@ -337,24 +452,6 @@ function showNotification(message, type = 'info') {
   }, 5000);
 }
 
-function cerrarModal() {
-  const modals = document.querySelectorAll('.modal');
-  modals.forEach(modal => {
-    modal.style.display = 'none';
-  });
-}
-
-function abrirModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.style.display = 'flex';
-    const firstInput = modal.querySelector('input, textarea, select');
-    if (firstInput) {
-      setTimeout(() => firstInput.focus(), 100);
-    }
-  }
-}
-
 function escapeHtml(text) {
   const map = {
     '&': '&amp;',
@@ -370,16 +467,111 @@ function disableSubmitButton(form) {
   const button = form.querySelector('button[type="submit"]');
   if (button) {
     button.disabled = true;
-    const originalText = button.innerHTML;
+    button.dataset.originalText = button.innerHTML;
     button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
-
-    setTimeout(() => {
-      if (button.disabled) {
-        button.disabled = false;
-        button.innerHTML = originalText;
-      }
-    }, 5000);
   }
+}
+
+function enableSubmitButton(form) {
+  const button = form.querySelector('button[type="submit"]');
+  if (button) {
+    button.disabled = false;
+    button.innerHTML = button.dataset.originalText || button.innerHTML;
+  }
+}
+
+function openProductModal() {
+  if (!modalManager) {
+    console.error('❌ ModalManager no inicializado');
+    return;
+  }
+
+  modalManager.open('productModal');
+  
+  const form = document.getElementById('productForm');
+  if (form) {
+    form.reset();
+    form.action = '/admin/productos';
+    
+    document.getElementById('productId').value = '';
+    document.getElementById('method').value = 'POST';
+    document.getElementById('imagen').value = '';
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('colorPrincipal').value = '#00ff00';
+    document.getElementById('colorSecundario').value = '#00cc00';
+    document.getElementById('colorTerciario').value = '#66ff66';
+    
+    if (typeof updateColorPreview === 'function') {
+      updateColorPreview();
+    }
+  }
+  
+  const title = document.getElementById('modalTitle');
+  if (title) {
+    title.textContent = 'Nuevo Producto';
+  }
+}
+
+function closeProductModal() {
+  if (!modalManager) return;
+  modalManager.close('productModal');
+}
+
+function editarUsuario(id, nombre, apellido, email, rol) {
+  if (!modalManager) {
+    console.error('❌ ModalManager no inicializado');
+    return;
+  }
+
+  modalManager.open('modalEditarUsuario');
+  
+  const form = document.getElementById('formEditarUsuario');
+  if (form) {
+    form.action = `/admin/usuarios/${id}`;
+    
+    const nameInput = document.getElementById('edit_nombre');
+    const lastNameInput = document.getElementById('edit_apellido');
+    const emailInput = document.getElementById('edit_email');
+    const roleSelect = document.getElementById('edit_rol');
+    
+    if (nameInput) nameInput.value = nombre;
+    if (lastNameInput) lastNameInput.value = apellido;
+    if (emailInput) emailInput.value = email;
+    
+    if (roleSelect) {
+      const isSuperAdmin = typeof window.isSuperAdmin !== 'undefined' && window.isSuperAdmin;
+      
+      if (isSuperAdmin) {
+        const esSuperAdmin = rol === 'superadmin';
+        const currentUserId = parseInt(document.querySelector('[data-user-id]')?.getAttribute('data-user-id') || 0);
+        const esUsuarioActual = id === currentUserId;
+        
+        if (esSuperAdmin || esUsuarioActual) {
+          roleSelect.disabled = true;
+          roleSelect.value = rol;
+          roleSelect.title = esSuperAdmin 
+            ? 'No se puede cambiar el rol de un superadmin' 
+            : 'No puedes cambiar tu propio rol';
+        } else {
+          roleSelect.disabled = false;
+          roleSelect.value = rol;
+        }
+      }
+    }
+  }
+}
+
+function cerrarModal() {
+  if (!modalManager) return;
+  modalManager.close('modalEditarUsuario');
+}
+
+function abrirModal(modalId) {
+  if (!modalManager) {
+    console.error('❌ ModalManager no inicializado');
+    return;
+  }
+  modalManager.open(modalId);
 }
 
 // ==================== ESTILOS CSS DINÁMICOS ====================
@@ -388,25 +580,13 @@ if (!document.getElementById('admin-animations')) {
   style.id = 'admin-animations';
   style.textContent = `
     @keyframes slideInRight {
-      from {
-        transform: translateX(400px);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
 
     @keyframes slideOutRight {
-      from {
-        transform: translateX(0);
-        opacity: 1;
-      }
-      to {
-        transform: translateX(400px);
-        opacity: 0;
-      }
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(400px); opacity: 0; }
     }
 
     select {
@@ -416,9 +596,7 @@ if (!document.getElementById('admin-animations')) {
       cursor: pointer;
     }
 
-    select option:hover,
-    select option:focus,
-    select option:checked {
+    select option {
       background: #1a1a1a !important;
       color: #00ff00 !important;
     }
@@ -466,50 +644,4 @@ if (!document.getElementById('admin-animations')) {
   document.head.appendChild(style);
 }
 
-// ==================== LOG FINAL ====================
-console.log('✅ Admin modal enhancements loaded');
-console.log('Available functions:');
-console.log('  - abrirModal(id)');
-console.log('  - cerrarModal()');
-console.log('  - showNotification(msg, type)');
-console.log('  - escapeHtml(text)');
-  });
-
-  // ==================== 4. VALIDAR FORMULARIOS DE AYUDA ====================
-  const helpForms = document.querySelectorAll('form[action*="/ayuda/"][action*="/responder"]');
-  helpForms.forEach(form => {
-    form.addEventListener('submit', function(e) {
-      const textarea = this.querySelector('textarea[name="mensaje"]');
-      const select = this.querySelector('select[name="estado"]');
-
-      const errors = validateForm(this);
-
-      if (errors.length > 0) {
-        e.preventDefault();
-        showNotification(errors[0], 'error');
-        return false;
-      }
-
-      if (!textarea || !textarea.value.trim()) {
-        e.preventDefault();
-        showNotification('Por favor escribe un mensaje', 'error');
-        textarea?.focus();
-        return false;
-      }
-
-      if (textarea.value.trim().length < 10) {
-        e.preventDefault();
-        showNotification('El mensaje debe tener al menos 10 caracteres', 'error');
-        textarea.focus();
-        return false;
-      }
-
-      if (!select || !select.value) {
-        e.preventDefault();
-        showNotification('Por favor selecciona un estado', 'error');
-        select?.focus();
-        return false;
-      }
-
-      disableSubmitButton(this);
-    });
+console.log('✅ Admin modal system v3.0 loaded successfully');

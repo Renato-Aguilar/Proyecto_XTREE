@@ -1954,6 +1954,7 @@ input[type="checkbox"] {
 .admin-container {
   background: var(--bg-dark);
   color: var(--text-primary);
+  padding-top: 50px;
 }
 
 .admin-content {

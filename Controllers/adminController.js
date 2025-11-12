@@ -69,7 +69,7 @@ const getProductos = async (req, res) => {
   }
 };
 
-// ✅ CREAR PRODUCTO
+//  CREAR PRODUCTO
 const createProducto = async (req, res) => {
   let connection;
   try {
@@ -87,7 +87,7 @@ const createProducto = async (req, res) => {
     console.log('📸 Archivo:', req.file ? `${req.file.filename} (${req.file.size} bytes)` : 'NO HAY ARCHIVO');
     console.log('🎨 Colores extraídos:', req.extractedColors);
 
-    // ✅ VALIDACIONES
+    //  VALIDACIONES
     if (!nombre || !descripcion || !precio || stock === undefined) {
       return res.status(400).json({
         success: false,
@@ -133,7 +133,7 @@ const createProducto = async (req, res) => {
 
     if (req.extractedColors) {
       colores = req.extractedColors;
-      console.log('✅ Usando colores automáticos extraídos');
+      console.log(' Usando colores automáticos extraídos');
     } else {
       console.log('📝 Usando colores manuales ingresados');
     }
@@ -143,8 +143,8 @@ const createProducto = async (req, res) => {
     // Insertar producto
     const [resultado] = await connection.query(
       `INSERT INTO productos 
-       (nombre, descripcion, precio, imagen_url, color_principal, color_secundario, color_tertiary) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      (nombre, descripcion, precio, imagen_url, color_principal, color_secundario, color_tertiary) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         nombre.trim(),
         descripcion.trim(),
@@ -176,11 +176,11 @@ const createProducto = async (req, res) => {
 
     await connection.commit();
 
-    console.log('✅ Producto creado exitosamente - ID:', idProducto);
+    console.log(' Producto creado exitosamente - ID:', idProducto);
 
     return res.json({
       success: true,
-      message: '✅ Producto creado correctamente',
+      message: ' Producto creado correctamente',
       productId: idProducto
     });
 
@@ -196,7 +196,7 @@ const createProducto = async (req, res) => {
   }
 };
 
-// ✅ ACTUALIZAR PRODUCTO
+//  ACTUALIZAR PRODUCTO
 const updateProducto = async (req, res) => {
   let connection;
   try {
@@ -305,11 +305,11 @@ const updateProducto = async (req, res) => {
 
     await connection.commit();
 
-    console.log('✅ Producto actualizado exitosamente');
+    console.log(' Producto actualizado exitosamente');
 
     return res.json({
       success: true,
-      message: '✅ Producto actualizado correctamente'
+      message: ' Producto actualizado correctamente'
     });
 
   } catch (error) {
@@ -324,7 +324,7 @@ const updateProducto = async (req, res) => {
   }
 };
 
-// ✅ ELIMINAR PRODUCTO
+//  ELIMINAR PRODUCTO
 const deleteProducto = async (req, res) => {
   let connection;
   try {
@@ -735,95 +735,209 @@ const getUsuarios = async (req, res) => {
   }
 };
 
+// Reemplaza la función updateUsuario en adminController.js
+
 const updateUsuario = async (req, res) => {
   try {
     const { id_usuario } = req.params;
     const { nombre, apellido, email, direccion, rol } = req.body;
 
+    console.log('🔍 UpdateUsuario recibido:');
+    console.log('📍 ID Usuario:', id_usuario);
+    console.log('📍 Req.body:', req.body);
+    console.log('📍 Content-Type:', req.headers['content-type']);
+
+    // ✅ Verificar que id_usuario es válido
     if (!id_usuario || isNaN(id_usuario)) {
-      req.flash('error', 'ID de usuario inválido');
+      const errorMsg = 'ID de usuario inválido';
+      
+      // Si es AJAX, devolver JSON
+      if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+        return res.status(400).json({ success: false, error: errorMsg });
+      }
+      
+      req.flash('error', errorMsg);
       return res.redirect('/admin/usuarios');
     }
 
-    if (!nombre || !apellido || !email) {
-      req.flash('error', 'Nombre, apellido y email son obligatorios');
+    // ✅ Al menos algún campo debe tener valor
+    if (!nombre && !apellido && !email && !rol && !direccion) {
+      const errorMsg = 'Debes modificar al menos un campo';
+      
+      if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+        return res.status(400).json({ success: false, error: errorMsg });
+      }
+      
+      req.flash('error', errorMsg);
       return res.redirect('/admin/usuarios');
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      req.flash('error', 'Email inválido');
-      return res.redirect('/admin/usuarios');
+    // ✅ Si se proporciona email, validar formato
+    if (email && email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        const errorMsg = 'Email inválido';
+        
+        if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+          return res.status(400).json({ success: false, error: errorMsg });
+        }
+        
+        req.flash('error', errorMsg);
+        return res.redirect('/admin/usuarios');
+      }
     }
 
+    // ✅ Obtener usuario actual
     const [usuarios] = await pool.query(
       'SELECT id_usuario, rol FROM usuarios WHERE id_usuario = ?',
       [id_usuario]
     );
 
     if (usuarios.length === 0) {
-      req.flash('error', 'Usuario no encontrado');
+      const errorMsg = 'Usuario no encontrado';
+      
+      if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+        return res.status(404).json({ success: false, error: errorMsg });
+      }
+      
+      req.flash('error', errorMsg);
       return res.redirect('/admin/usuarios');
     }
 
     const usuarioActual = usuarios[0];
 
-    // ✅ RESTRICCIÓN 1: No permitir cambio de rol a no-superadmin
+    // ✅ RESTRICCIÓN: Solo superadmin puede cambiar roles
     if (rol && req.session.userRole !== 'superadmin') {
-      req.flash('error', 'Solo superadministradores pueden cambiar roles');
+      const errorMsg = 'Solo superadministradores pueden cambiar roles';
+      
+      if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+        return res.status(403).json({ success: false, error: errorMsg });
+      }
+      
+      req.flash('error', errorMsg);
       return res.redirect('/admin/usuarios');
     }
 
-    // ✅ RESTRICCIÓN 2: No permitir que nadie se cambie a sí mismo a otro rol
+    // ✅ RESTRICCIÓN: No cambiar propio rol
     if (rol && parseInt(id_usuario) === req.session.userId) {
       if (rol !== usuarioActual.rol) {
-        req.flash('error', 'No puedes cambiar tu propio rol');
+        const errorMsg = 'No puedes cambiar tu propio rol';
+        
+        if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+          return res.status(403).json({ success: false, error: errorMsg });
+        }
+        
+        req.flash('error', errorMsg);
         return res.redirect('/admin/usuarios');
       }
     }
 
-    // ✅ RESTRICCIÓN 3: NO PERMITIR CREAR NI MODIFICAR SUPERADMINS NUNCA
+    // ✅ RESTRICCIÓN: No permitir rol superadmin
     if (rol === 'superadmin') {
-      req.flash('error', 'El rol de superadmin no se puede asignar desde la interfaz. Contacta con el administrador del sistema');
+      const errorMsg = 'El rol de superadmin no se puede asignar desde la interfaz';
+      
+      if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+        return res.status(403).json({ success: false, error: errorMsg });
+      }
+      
+      req.flash('error', errorMsg);
       return res.redirect('/admin/usuarios');
     }
 
-    // ✅ RESTRICCIÓN 4: No permitir degradar a un superadmin a otro rol
+    // ✅ RESTRICCIÓN: No degradar superadmin
     if (usuarioActual.rol === 'superadmin' && rol && rol !== 'superadmin') {
-      req.flash('error', 'No se puede cambiar el rol de un superadmin');
+      const errorMsg = 'No se puede cambiar el rol de un superadmin';
+      
+      if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+        return res.status(403).json({ success: false, error: errorMsg });
+      }
+      
+      req.flash('error', errorMsg);
       return res.redirect('/admin/usuarios');
     }
 
-    // ✅ RESTRICCIÓN 5: Solo permitir cambiar entre 'cliente' y 'admin'
+    // ✅ RESTRICCIÓN: Solo roles permitidos
     if (rol) {
       const rolesPermitidos = ['cliente', 'admin'];
       if (!rolesPermitidos.includes(rol)) {
-        req.flash('error', 'Rol no permitido. Solo se puede asignar "cliente" o "admin"');
+        const errorMsg = 'Rol no permitido. Solo "cliente" o "admin"';
+        
+        if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+          return res.status(400).json({ success: false, error: errorMsg });
+        }
+        
+        req.flash('error', errorMsg);
         return res.redirect('/admin/usuarios');
       }
     }
 
-    const [emailExistente] = await pool.query(
-      'SELECT id_usuario FROM usuarios WHERE email = ? AND id_usuario != ?',
-      [email.trim(), id_usuario]
-    );
+    // ✅ Verificar email duplicado
+    if (email && email.trim()) {
+      const [emailExistente] = await pool.query(
+        'SELECT id_usuario FROM usuarios WHERE email = ? AND id_usuario != ?',
+        [email.trim(), id_usuario]
+      );
 
-    if (emailExistente.length > 0) {
-      req.flash('error', 'Este email ya está registrado');
-      return res.redirect('/admin/usuarios');
+      if (emailExistente.length > 0) {
+        const errorMsg = 'Este email ya está registrado';
+        
+        if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+          return res.status(400).json({ success: false, error: errorMsg });
+        }
+        
+        req.flash('error', errorMsg);
+        return res.redirect('/admin/usuarios');
+      }
     }
 
-    let query = 'UPDATE usuarios SET nombre = ?, apellido = ?, email = ?, direccion = ?';
-    let params = [nombre.trim(), apellido.trim(), email.trim(), direccion ? direccion.trim() : ''];
+    // ✅ Construir query dinámico
+    let query = 'UPDATE usuarios SET ';
+    let params = [];
+    let fields = [];
+
+    if (nombre && nombre.trim()) {
+      fields.push('nombre = ?');
+      params.push(nombre.trim());
+    }
+
+    if (apellido && apellido.trim()) {
+      fields.push('apellido = ?');
+      params.push(apellido.trim());
+    }
+
+    if (email && email.trim()) {
+      fields.push('email = ?');
+      params.push(email.trim());
+    }
+
+    if (direccion !== undefined) {
+      fields.push('direccion = ?');
+      params.push(direccion ? direccion.trim() : '');
+    }
 
     // Solo cambiar rol si es superadmin y el rol es diferente
     if (rol && req.session.userRole === 'superadmin' && rol !== usuarioActual.rol) {
-      query += ', rol = ?';
+      fields.push('rol = ?');
       params.push(rol);
     }
 
-    query += ' WHERE id_usuario = ?';
+    // Si no hay campos para actualizar
+    if (fields.length === 0) {
+      const errorMsg = 'No hay cambios para guardar';
+      
+      if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+        return res.status(400).json({ success: false, error: errorMsg });
+      }
+      
+      req.flash('error', errorMsg);
+      return res.redirect('/admin/usuarios');
+    }
+
+    query += fields.join(', ') + ' WHERE id_usuario = ?';
     params.push(id_usuario);
+
+    console.log('💾 Ejecutando query:', query);
+    console.log('📋 Con parámetros:', params);
 
     await pool.query(query, params);
 
@@ -832,18 +946,38 @@ const updateUsuario = async (req, res) => {
       'Actualizar Usuario',
       'usuarios',
       id_usuario,
-      `Email: ${email.trim()}, Rol: ${rol || 'sin cambio'}`,
+      `Email: ${email || 'sin cambio'}, Rol: ${rol || 'sin cambio'}`,
       req.ip
     );
 
+    // ✅ Si es AJAX, devolver JSON
+    if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+      return res.json({
+        success: true,
+        message: 'Usuario actualizado correctamente'
+      });
+    }
+
+    // Si no es AJAX, redirigir con flash
     req.flash('success', 'Usuario actualizado correctamente');
     res.redirect('/admin/usuarios');
+
   } catch (error) {
-    console.error('Error al actualizar usuario:', error);
+    console.error('❌ Error al actualizar usuario:', error);
+    
+    // Si es AJAX, devolver JSON
+    if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
+      return res.status(500).json({
+        success: false,
+        error: error.message || 'Error al actualizar usuario'
+      });
+    }
+
     req.flash('error', error.message || 'Error al actualizar usuario');
     res.redirect('/admin/usuarios');
   }
 };
+
 
 // ==================== EXPORTAR FUNCIONES ====================
 module.exports = {

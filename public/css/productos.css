@@ -355,10 +355,10 @@
 .carrusel-wrapper {
   position: relative;
   width: 100%;
-  height: 600px;
+  height: 750px;
   overflow: hidden;
   background: #0a0e27;
-  margin-bottom: 60px;
+
 }
 
 .carrusel-container {

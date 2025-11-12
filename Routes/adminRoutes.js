@@ -86,6 +86,9 @@ router.post('/ayuda/:id/responder', responderSolicitud);
 
 // ==================== GESTIÓN DE USUARIOS ====================
 router.get('/usuarios', getUsuarios);
+
+// ✅ ACTUALIZAR USUARIO - Aceptar tanto PUT como POST
 router.put('/usuarios/:id_usuario', updateUsuario);
+router.post('/usuarios/:id_usuario', updateUsuario);
 
 module.exports = router;

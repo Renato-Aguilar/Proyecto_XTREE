@@ -75,7 +75,6 @@
                     <td class="text-center"><%= usuario.total_pedidos %></td>
                     <td class="text-green font-bold">$<%= usuario.gasto_total.toLocaleString('es-CL') %></td>
                     <td class="actions-cell">
-                      <!-- ✅ BOTÓN DESHABILITADO SI ES SUPERADMIN O SI ERES UN ADMIN Y EL USUARIO ES SUPERADMIN O TÚ MISMO -->
                       <% 
                         const esSuperAdmin = usuario.rol === 'superadmin';
                         const esUsuarioActual = usuario.id_usuario === user.id;
@@ -123,17 +122,17 @@
         <div class="modal-body">
           <div class="form-group">
             <label>Nombre</label>
-            <input type="text" name="nombre" id="edit_nombre" required>
+            <input type="text" name="nombre" id="edit_nombre">
           </div>
 
           <div class="form-group">
             <label>Apellido</label>
-            <input type="text" name="apellido" id="edit_apellido" required>
+            <input type="text" name="apellido" id="edit_apellido">
           </div>
 
           <div class="form-group">
             <label>Email</label>
-            <input type="email" name="email" id="edit_email" required>
+            <input type="email" name="email" id="edit_email">
           </div>
 
           <div class="form-group">
@@ -141,14 +140,12 @@
             <input type="text" name="direccion" id="edit_direccion" placeholder="Actualizar dirección (opcional)">
           </div>
 
-          <!-- ✅ CAMPO DE ROL CON VALIDACIONES EN FRONTEND -->
           <% if (isSuperAdmin) { %>
             <div class="form-group">
               <label>Rol</label>
               <select name="rol" id="edit_rol">
                 <option value="cliente">Cliente</option>
                 <option value="admin">Administrador</option>
-                <!-- ✅ NO MOSTRAR LA OPCIÓN DE SUPERADMIN EN EL FRONTEND -->
               </select>
               <small class="form-hint">
                 <i class="fa-solid fa-warning"></i>
@@ -168,37 +165,55 @@
     </div>
   </div>
 
+  <script src="/js/admin-modal.js"></script>
+
   <script>
     function editarUsuario(id, nombre, apellido, email, rol) {
-      const modal = document.getElementById('modalEditarUsuario');
+      if (!modalManager) {
+        console.error('Error: ModalManager no inicializado');
+        return;
+      }
+
+      modalManager.open('modalEditarUsuario');
+      
       const form = document.getElementById('formEditarUsuario');
-      
-      form.action = `/admin/usuarios/${id}`;
-      document.getElementById('edit_nombre').value = nombre;
-      document.getElementById('edit_apellido').value = apellido;
-      document.getElementById('edit_email').value = email;
-      
-      <% if (isSuperAdmin) { %>
-        // ✅ SI EL USUARIO ES SUPERADMIN O ES TÚ MISMO, NO PERMITIR CAMBIO DE ROL
-        const selectRol = document.getElementById('edit_rol');
-        const esSuperAdmin = rol === 'superadmin';
-        const esUsuarioActual = id === <%= user.id %>;
+      if (form) {
+        form.action = `/admin/usuarios/${id}`;
         
-        if (esSuperAdmin || esUsuarioActual) {
-          selectRol.disabled = true;
-          selectRol.value = rol;
-          selectRol.title = esSuperAdmin ? 'No se puede cambiar el rol de un superadmin' : 'No puedes cambiar tu propio rol';
-        } else {
-          selectRol.disabled = false;
-          selectRol.value = rol;
+        const nameInput = document.getElementById('edit_nombre');
+        const lastNameInput = document.getElementById('edit_apellido');
+        const emailInput = document.getElementById('edit_email');
+        const roleSelect = document.getElementById('edit_rol');
+        
+        if (nameInput) nameInput.value = nombre;
+        if (lastNameInput) lastNameInput.value = apellido;
+        if (emailInput) emailInput.value = email;
+        
+        if (roleSelect) {
+          <% if (isSuperAdmin) { %>
+            const esSuperAdmin = rol === 'superadmin';
+            const currentUserId = <%= user.id %>;
+            const esUsuarioActual = id === currentUserId;
+            
+            if (esSuperAdmin || esUsuarioActual) {
+              roleSelect.disabled = true;
+              roleSelect.value = rol;
+              roleSelect.title = esSuperAdmin 
+                ? 'No se puede cambiar el rol de un superadmin' 
+                : 'No puedes cambiar tu propio rol';
+            } else {
+              roleSelect.disabled = false;
+              roleSelect.value = rol;
+            }
+          <% } %>
         }
-      <% } %>
-      
-      modal.style.display = 'flex';
+      }
     }
 
     function cerrarModal() {
-      document.getElementById('modalEditarUsuario').style.display = 'none';
+      if (modalManager) {
+        modalManager.close('modalEditarUsuario');
+      }
     }
 
     window.onclick = function(event) {
@@ -207,18 +222,65 @@
         cerrarModal();
       }
     }
+  </script>
 
-    // ✅ VALIDACIÓN EN CLIENTE ANTES DE ENVIAR
-    document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
-      const selectRol = document.getElementById('edit_rol');
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('formEditarUsuario');
       
-      // Si está deshabilitado el select, no enviar cambio de rol
-      if (selectRol && selectRol.disabled) {
-        // Eliminar el atributo name para que no se envíe
-        selectRol.removeAttribute('name');
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const action = this.action;
+          const formData = new FormData(this);
+          
+          const data = {};
+          for (let [key, value] of formData.entries()) {
+            data[key] = value;
+          }
+          
+          console.log('Enviando actualización...');
+          console.log('URL:', action);
+          console.log('Método: PUT');
+          console.log('Datos:', data);
+          
+          try {
+            const response = await fetch(action, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify(data)
+            });
+            
+            console.log('Respuesta HTTP:', response.status, response.statusText);
+            
+            const result = await response.json();
+            console.log('Datos de respuesta:', result);
+            
+            if (response.ok && result.success) {
+              showNotification('Ok ' + (result.message || 'Usuario actualizado correctamente'), 'success');
+              cerrarModal();
+              
+              setTimeout(() => {
+                location.reload();
+              }, 1500);
+            } else {
+              showNotification('Error: ' + (result.message || result.error || 'No especificado'), 'error');
+            }
+          } catch (error) {
+            console.error('Error de red:', error);
+            showNotification('Error de conexión: ' + error.message, 'error');
+          }
+        });
+        
+        console.log('Formulario de usuarios configurado con AJAX');
+      } else {
+        console.error('Formulario #formEditarUsuario no encontrado');
       }
     });
   </script>
-<script src="/js/admin-modal.js"></script>
 </body>
 </html>
